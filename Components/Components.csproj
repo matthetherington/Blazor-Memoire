@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <AssemblyName>BlazorMemoire.Components</AssemblyName>
+    <RootNamespace>BlazorMemoire.Components</RootNamespace>
+    <PackageId>BlazorMemoire</PackageId>
+
+    <!-- See https://github.com/dotnet/razor/issues/13184 -->
+    <UseSharedCompilation>false</UseSharedCompilation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <SupportedPlatform Include="browser" />
+    <InternalsVisibleTo Include="BlazorMemoire.Components.Tests" />
+  </ItemGroup>
+</Project>

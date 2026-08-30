@@ -1,0 +1,32 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Matthew Hetherington</Authors>
+    <PackageReleaseNotes>https://github.com/matthetherington/Blazor-Memoire/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <RepositoryUrl>https://github.com/matthetherington/Blazor-Memoire</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryBranch>main</RepositoryBranch>
+    <Version>0.0.1</Version>
+    <RepositoryCommit>1a95fc13ac91c1d61bb0382b6800ed8603d0b279</RepositoryCommit>
+
+    <!-- make editorconfig / code style rules non-optional -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- MA0025 - Implement the functionality instead of throwing NotImplementedException -->
+    <!-- MA0049 - MA0026 - Fix TODO comment -->
+    <NoWarn>MA0025,MA0026</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.122">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="CSharpier.MsBuild" Version="1.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

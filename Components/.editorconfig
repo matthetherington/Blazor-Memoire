@@ -1,0 +1,3 @@
+[*.{cs,razor,cshtml}]
+dotnet_diagnostic.MA0004.severity = none
+dotnet_diagnostic.CA2007.severity = none
