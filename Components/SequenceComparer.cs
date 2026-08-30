@@ -5,15 +5,14 @@ namespace BlazorMemoire.Components;
 /// <summary>
 /// Span-based comparison for arrays and lists of known primitive types.
 ///
-/// <b>Only types with sealed BCL Equals may be added to the switch.</b> This guarantees
+/// <b>Only types with sealed Equals method are added to the switch.</b> This guarantees
 /// two things: (a) skipping recursive comparison is correct, and (b) no user code runs
 /// while <see cref="CollectionsMarshal.AsSpan{T}"/> holds a span over a list's backing
 /// array, so the list cannot be mutated during the comparison.
 ///
-/// Enum arrays match via CLR array covariance (ECMA-335 I.8.7.1) — e.g.
-/// <c>DayOfWeek[]</c> matches <c>case int[]</c>. Generics have no such rule, so
-/// <c>List&lt;DayOfWeek&gt;</c> is not handled. <c>Nullable&lt;T&gt;</c> can't appear
-/// here — it doesn't implement <see cref="IEquatable{T}"/>.
+/// Enum arrays match via covariance — e.g. <c>DayOfWeek[]</c> matches <c>case int[]</c>.
+/// Generics have no such rule, so <c>List&lt;DayOfWeek&gt;</c> is not handled.
+/// <c>Nullable&lt;T&gt;</c> can't appear here as it doesn't implement <see cref="IEquatable{T}"/>.
 /// </summary>
 internal static class SequenceComparer
 {

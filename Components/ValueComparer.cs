@@ -15,8 +15,8 @@ namespace BlazorMemoire.Components;
 ///
 /// Caveats:
 /// - <b>Mutating a collection in place is not detected.</b> Pass a new instance instead.
-/// - IEnumerable values are enumerated to compare. Materialise lazy queries before using
-///   them as keys.
+/// - IEnumerable values are enumerated to compare. <see cref="Memo"/> materialises lazy
+///   queries automatically; direct callers should materialise them before comparing.
 /// - Non-primitive set elements use an O(n*m) matching pass (avoids relying on
 ///   GetHashCode consistency). Sets with a coarser comparer (e.g. OrdinalIgnoreCase) also
 ///   take this path. Fine for typical key-sized sets.
@@ -232,7 +232,8 @@ internal static class ValueComparer
         );
 
     /// <summary>
-    /// Compares by key so insertion-order differences don't cause false positives.
+    /// Compares dictionary values by key so insertion-order differences don't result in a
+    /// detected change.
     /// </summary>
     private static bool DictionaryEqual(
         IDictionary oldDictionary,
@@ -313,7 +314,7 @@ internal static class ValueComparer
 
     /// <summary>
     /// Order-independent comparison using value-equality rather than hashing, since custom
-    /// types may not implement GetHashCode consistently. Buffers come from the stack or pool.
+    /// types may not implement GetHashCode consistently. Buffers come from the stack or shared pool.
     /// </summary>
     private static bool UnorderedEqual(
         IEnumerable oldEnumerable,

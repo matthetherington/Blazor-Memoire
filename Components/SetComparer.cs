@@ -1,8 +1,12 @@
 namespace BlazorMemoire.Components;
 
 /// <summary>
-/// O(n) set comparison for common primitive element types. Only used when the set's
-/// comparer agrees with structural equality; otherwise falls through to the O(n*m) scan.
+/// Compares sets for common primitive element types using <see cref="HashSet{T}.SetEquals"/>.
+/// Only used when the set's comparer matches default equality semantics (e.g. the default
+/// comparer or StringComparer.Ordinal). Sets with a coarser comparer like
+/// OrdinalIgnoreCase are skipped because their SetEquals can report equality between
+/// elements that differ by value, which would cause the Memo component to miss real changes.
+/// Returns unhandled so the caller can fall back to a general comparison strategy.
 /// </summary>
 internal static class SetComparer
 {
@@ -41,7 +45,7 @@ internal static class SetComparer
 
         if (newValue is not IEnumerable<T> newSet)
         {
-            return false; // shapes differ; let the general path decide
+            return false; // type mismatch; not handled
         }
 
         result = oldSet.SetEquals(newSet);
