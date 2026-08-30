@@ -37,12 +37,14 @@ public sealed class Memo : ComponentBase
     [Parameter]
     public IReadOnlyList<object?>? Keys { get; set; }
 
+    /// <summary>The child content to render inside the memoisation boundary.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     private object?[]? _snapshot;
     private bool _hasSnapshot;
 
+    /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.TryGetValue<IReadOnlyList<object?>>(nameof(Keys), out var keys);
@@ -64,6 +66,7 @@ public sealed class Memo : ComponentBase
         return base.SetParametersAsync(parameters);
     }
 
+    /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.AddContent(0, ChildContent);
