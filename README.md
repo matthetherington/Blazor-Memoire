@@ -1,7 +1,10 @@
 # BlazorMemoire
 
-[![NuGet](https://img.shields.io/nuget/v/BlazorMemoire)](https://www.nuget.org/packages/BlazorMemoire)
-[![CI](https://github.com/matthetherington/Blazor-Memoire/actions/workflows/publish.yml/badge.svg)](https://github.com/matthetherington/Blazor-Memoire/actions/workflows/publish.yml)
+[![MIT License](https://img.shields.io/github/license/matthetherington/Blazor-Memoire?style=for-the-badge&labelColor=143642&color=FE5F55)](https://choosealicense.com/licenses/mit/)
+
+[![NuGet](https://img.shields.io/nuget/v/BlazorMemoire?style=for-the-badge&labelColor=143642&color=FE5F55)](https://www.nuget.org/packages/BlazorMemoire)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/matthetherington/Blazor-Memoire/publish.yml?style=for-the-badge&label=Publish%20to%20NuGet&labelColor=143642&color=FE5F55)](https://github.com/matthetherington/Blazor-Memoire/actions/workflows/publish.yml)
 
 A Blazor memoisation component, similar to React's [`useMemo`](https://react.dev/reference/react/useMemo#skipping-re-rendering-of-components) that freezes its child subtree until explicit dependency keys change, preventing unnecessary re-renders.
 
@@ -76,7 +79,8 @@ two nulls are equal and otherwise the stored element's own equality decides. Thi
 </Memo>
 ```
 
-> **Note:** wrapping a collection in a `record` does **not** give you content comparison.
+> [!NOTE]
+> Wrapping a collection in a `record` does **not** give you content comparison.
 > A record's generated `Equals` compares each field with `EqualityComparer<T>.Default`, and
 > for a `List<T>` field that is reference equality — so two records holding equal-content but
 > distinct lists are still unequal. Use `Deep="true"` (or a type that implements structural
