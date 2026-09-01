@@ -10,9 +10,15 @@ A Blazor memoisation component, similar to React's [`useMemo`](https://react.dev
 Blazor's built-in `ShouldRender` override lets a component decide internally whether to re-render. This works, but has limitations:
 
 - **The component controls its own re-render policy.** If you want the same component to re-render on different conditions in different places, you're stuck as `ShouldRender` is baked into the component itself. `<Memo>` moves that decision to the call site, so the parent chooses when the subtree updates.
-- **`ShouldRender` doesn't prevent parameter diffing.** Even when `ShouldRender` returns `false`, Blazor still calls `SetParametersAsync` and diffs every parameter on every parent render. `<Memo>` short-circuits before that happens so child components receive no new parameters at all when keys haven't changed.
+- **`ShouldRender` doesn't prevent parameter diffing.** Even when `ShouldRender` returns `false`, Blazor still calls `SetParametersAsync` and still sets every parameter and runs its lifecycle on every parent render. `<Memo>` short-circuits before that happens so child components receive no new parameters at all when keys haven't changed.
 - **It requires modifying the component.** Third-party or shared components can't have `ShouldRender` added from the outside. Wrapping them in `<Memo>` gives you render control without touching their source.
 - **Subtree-level control.** `ShouldRender` applies to a single component. `<Memo>` freezes an entire subtree (the wrapped component and all its descendants) in one declaration.
+
+`ShouldRender` is still the simpler choice when a component only needs to skip renders based on its own state, and you control its source.
+`<Memo>` earns its place when you need to control rendering at the point of use instead of in the component, cut out 
+rendering work for a whole subtree, or can't easily modify the component. 
+
+The trade-off is that the keys sit at the call site, decoupled from what the subtree actually consumes, so under-specifying them can result in stale UI.
 
 ## Installation
 
@@ -44,7 +50,7 @@ Wrap any subtree in a `<Memo>` component and provide dependency keys. The child 
 
 ### Comparison modes
 
-#### Shallow comparison (default with `Deep="true"`)
+#### Shallow comparison (default with `Deep="false"`)
 
 By default (with `Deep="false"`), each incoming key element is compared against the corresponding element from the previous 
 render's snapshot, position by position.
