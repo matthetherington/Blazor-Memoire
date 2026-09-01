@@ -8,11 +8,15 @@ public class MemoListKeyTests : MemoTestBase
     public void SameListKey_Freezes()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<string> { "a", "b", "c" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "a", "b", "c" }])
+                .Add(c => c.ChildText, "x")
         );
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new List<string> { "a", "b", "c" }]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "a", "b", "c" }])
+                .Add(c => c.ChildText, "y")
         );
 
         AssertChildRenders(cut.Instance.Child!, 1);
@@ -22,11 +26,15 @@ public class MemoListKeyTests : MemoTestBase
     public void DifferentListKey_ReRenders()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<string> { "a", "b" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "a", "b" }])
+                .Add(c => c.ChildText, "x")
         );
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new List<string> { "a", "c" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "a", "c" }])
+                .Add(c => c.ChildText, "x")
         );
 
         AssertChildRenders(cut.Instance.Child!, 2);
@@ -36,11 +44,15 @@ public class MemoListKeyTests : MemoTestBase
     public void DifferentListLength_ReRenders()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<string> { "a" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "a" }])
+                .Add(c => c.ChildText, "x")
         );
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new List<string> { "a", "b" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "a", "b" }])
+                .Add(c => c.ChildText, "x")
         );
 
         AssertChildRenders(cut.Instance.Child!, 2);
@@ -50,11 +62,15 @@ public class MemoListKeyTests : MemoTestBase
     public void ReorderedListKey_ReRenders()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<string> { "a", "b" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "a", "b" }])
+                .Add(c => c.ChildText, "x")
         );
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new List<string> { "b", "a" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string> { "b", "a" }])
+                .Add(c => c.ChildText, "x")
         );
 
         AssertChildRenders(cut.Instance.Child!, 2);
@@ -64,10 +80,16 @@ public class MemoListKeyTests : MemoTestBase
     public void SameValueTypeListKey_Freezes()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<int> { 1, 2, 3 }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<int> { 1, 2, 3 }])
+                .Add(c => c.ChildText, "x")
         );
 
-        cut.Render(p => p.Add(c => c.Keys, [new List<int> { 1, 2, 3 }]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<int> { 1, 2, 3 }])
+                .Add(c => c.ChildText, "y")
+        );
 
         AssertChildRenders(cut.Instance.Child!, 1);
     }
@@ -76,10 +98,16 @@ public class MemoListKeyTests : MemoTestBase
     public void EmptyListKey_Freezes()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<string>()]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string>()])
+                .Add(c => c.ChildText, "x")
         );
 
-        cut.Render(p => p.Add(c => c.Keys, [new List<string>()]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string>()])
+                .Add(c => c.ChildText, "y")
+        );
 
         AssertChildRenders(cut.Instance.Child!, 1);
     }
@@ -89,9 +117,13 @@ public class MemoListKeyTests : MemoTestBase
     {
         var list = new List<string> { "a", "b" };
 
-        var cut = Render<MemoParent>(p => p.Add(c => c.Keys, [list]).Add(c => c.ChildText, "x"));
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [list]).Add(c => c.ChildText, "x")
+        );
 
-        cut.Render(p => p.Add(c => c.Keys, [list]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [list]).Add(c => c.ChildText, "y")
+        );
 
         AssertChildRenders(cut.Instance.Child!, 1);
     }
@@ -103,10 +135,14 @@ public class MemoListKeyTests : MemoTestBase
         // invisible and the subtree stays frozen. Callers must pass a new instance.
         var list = new List<string> { "a", "b" };
 
-        var cut = Render<MemoParent>(p => p.Add(c => c.Keys, [list]).Add(c => c.ChildText, "x"));
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [list]).Add(c => c.ChildText, "x")
+        );
 
         list.Add("c");
-        cut.Render(p => p.Add(c => c.Keys, [list]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [list]).Add(c => c.ChildText, "y")
+        );
 
         AssertChildRenders(cut.Instance.Child!, 1);
     }
@@ -115,16 +151,22 @@ public class MemoListKeyTests : MemoTestBase
     public void CollectionsContainingNulls_AreCompared()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<string?> { "a", null, "c" }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string?> { "a", null, "c" }])
+                .Add(c => c.ChildText, "x")
         );
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new List<string?> { "a", null, "c" }]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string?> { "a", null, "c" }])
+                .Add(c => c.ChildText, "y")
         );
         AssertChildRenders(cut.Instance.Child!, 1);
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new List<string?> { "a", "b", "c" }]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<string?> { "a", "b", "c" }])
+                .Add(c => c.ChildText, "y")
         );
         AssertChildRenders(cut.Instance.Child!, 2);
     }
@@ -133,10 +175,12 @@ public class MemoListKeyTests : MemoTestBase
     public void CollectionReplacedByScalar_ReRenders()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new List<int> { 1 }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<int> { 1 }])
+                .Add(c => c.ChildText, "x")
         );
 
-        cut.Render(p => p.Add(c => c.Keys, [1]).Add(c => c.ChildText, "x"));
+        cut.Render(p => p.Add(c => c.Deep, true).Add(c => c.Keys, [1]).Add(c => c.ChildText, "x"));
 
         AssertChildRenders(cut.Instance.Child!, 2);
     }

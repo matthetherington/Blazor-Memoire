@@ -8,7 +8,7 @@ namespace BlazorMemoire.Components;
 
 /// <summary>
 /// A wrapper component that freezes its child subtree until explicit <see cref="Keys"/>
-/// change. When keys are value-equal to the previous render, <see cref="BuildRenderTree"/>
+/// change. When keys are equal to the previous render, <see cref="BuildRenderTree"/>
 /// does not run and child components receive no new parameters.
 ///
 /// <list type="bullet">
@@ -17,10 +17,14 @@ namespace BlazorMemoire.Components;
 ///   <item><c>Keys = [a, b, c]</c> — re-render only when a key element changes.</item>
 /// </list>
 ///
-/// Key elements are compared with deep value equality via <see cref="ValueComparer"/>:
-/// collections element-wise, records by value, primitives by value. The keys array is
-/// cloned on snapshot to prevent corruption if the caller reuses or mutates it.
-/// The snapshot buffer is reused across renders to minimise allocation.
+/// By default, key elements are compared with a per-element null-safe
+/// <see cref="object.Equals(object?)"/>. This means collections such as <c>List&lt;T&gt;</c>
+/// are compared by reference, and equal-content-but-distinct instances are treated as changed.
+/// Set <see cref="Deep"/> to <c>true</c> to instead use deep structural comparison via
+/// <see cref="ValueComparer"/> (collections element-wise, records by value, primitives by value).
+///
+/// The keys snapshot buffer is reused across renders to minimise allocation. In deep mode,
+/// lazy enumerables are materialised on snapshot; in the default mode they are copied by reference.
 /// </summary>
 public sealed class Memo : ComponentBase
 {
@@ -41,15 +45,34 @@ public sealed class Memo : ComponentBase
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// When <c>false</c> (the default), key elements are compared with a per-element null-safe
+    /// <see cref="object.Equals(object?)"/>. Reference-type collections therefore compare by
+    /// reference. When <c>true</c>, key elements are compared with deep structural equality via
+    /// <see cref="ValueComparer"/> (collections element-wise, records by value), and lazy
+    /// enumerables are materialised on snapshot. This value is expected to be constant for the
+    /// lifetime of a given <see cref="Memo"/> instance; changing it between renders is treated
+    /// as a key change and forces a re-render.
+    /// </summary>
+    [Parameter]
+    public bool Deep { get; set; }
+
     private object?[]? _snapshot;
     private bool _hasSnapshot;
+    private bool _snapshotDeep;
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.TryGetValue<IReadOnlyList<object?>>(nameof(Keys), out var keys);
+        parameters.TryGetValue<bool>(nameof(Deep), out var deep);
 
-        if (_hasSnapshot && keys is not null && KeysEqual(_snapshot, keys))
+        if (
+            _hasSnapshot
+            && keys is not null
+            && deep == _snapshotDeep
+            && KeysEqual(_snapshot, keys, deep)
+        )
         {
             // Keys haven't changed — freeze the subtree. Still assign properties so the
             // component holds the latest instances (e.g. a new ChildContent delegate that
@@ -58,9 +81,12 @@ public sealed class Memo : ComponentBase
             return Task.CompletedTask;
         }
 
-        // Clone the keys so a caller reusing or mutating the array can't corrupt the snapshot.
-        // The snapshot buffer is reused across renders when the key count is stable.
-        _snapshot = keys is null ? null : MaterialiseKeys(keys, _snapshot);
+        // Snapshot the incoming keys. In deep mode, lazy enumerables are materialised so a
+        // caller reusing/mutating a collection can't corrupt the snapshot; in the default mode
+        // elements are copied by reference. The snapshot buffer is reused across renders when
+        // the key count is stable.
+        _snapshot = keys is null ? null : SnapshotKeys(keys, _snapshot, deep);
+        _snapshotDeep = deep;
         _hasSnapshot = true;
 
         return base.SetParametersAsync(parameters);
@@ -72,7 +98,7 @@ public sealed class Memo : ComponentBase
         builder.AddContent(0, ChildContent);
     }
 
-    private static bool KeysEqual(object?[]? snapshot, IReadOnlyList<object?> current)
+    private static bool KeysEqual(object?[]? snapshot, IReadOnlyList<object?> current, bool deep)
     {
         if (snapshot is null)
         {
@@ -86,7 +112,11 @@ public sealed class Memo : ComponentBase
 
         for (var i = 0; i < snapshot.Length; i++)
         {
-            if (!ValueComparer.ValuesEqual(snapshot[i], current[i], 0))
+            var equal = deep
+                ? ValueComparer.ValuesEqual(snapshot[i], current[i], 0)
+                : ShallowEquals(snapshot[i], current[i]);
+
+            if (!equal)
             {
                 return false;
             }
@@ -96,7 +126,43 @@ public sealed class Memo : ComponentBase
     }
 
     /// <summary>
-    /// Returns a snapshot of <paramref name="keys"/> suitable for later comparison.
+    /// Per-element null-safe equality: two nulls are equal; otherwise defers to the element's
+    /// own <see cref="object.Equals(object?)"/>. Used by the default (non-deep) comparison mode.
+    /// </summary>
+    private static bool ShallowEquals(object? a, object? b) => a is null ? b is null : a.Equals(b);
+
+    /// <summary>
+    /// Returns a snapshot of <paramref name="keys"/> suitable for later comparison, reusing
+    /// <paramref name="existing"/> when the length matches to avoid allocation. In deep mode
+    /// lazy enumerables are materialised (see <see cref="MaterialiseKeys"/>); in the default
+    /// mode every element is copied by reference.
+    /// </summary>
+    private static object?[] SnapshotKeys(
+        IReadOnlyList<object?> keys,
+        object?[]? existing,
+        bool deep
+    )
+    {
+        if (deep)
+        {
+            return MaterialiseKeys(keys, existing);
+        }
+
+        var result =
+            existing is not null && existing.Length == keys.Count
+                ? existing
+                : new object?[keys.Count];
+
+        for (var i = 0; i < keys.Count; i++)
+        {
+            result[i] = keys[i];
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Returns a snapshot of <paramref name="keys"/> suitable for later deep comparison.
     /// The result array is reused from <paramref name="existing"/> when the length matches
     /// to avoid allocation. Lazy <see cref="IEnumerable"/> elements are eagerly evaluated
     /// into arrays; all other elements are copied by reference.

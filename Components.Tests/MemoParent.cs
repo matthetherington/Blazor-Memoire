@@ -7,11 +7,6 @@ namespace BlazorMemoire.Components.Tests;
 /// A parent component that renders <c>&lt;Memo Keys="@Keys"&gt;&lt;RenderCounter /&gt;&lt;/Memo&gt;</c>.
 /// Simulates the render tree Razor would generate. Captures a reference to the child so
 /// tests can inspect its render/parameter counts.
-/// </summary>
-/// <summary>
-/// A parent component that renders <c>&lt;Memo Keys="@Keys"&gt;&lt;RenderCounter /&gt;&lt;/Memo&gt;</c>.
-/// Simulates the render tree Razor would generate. Captures a reference to the child so
-/// tests can inspect its render/parameter counts.
 ///
 /// <see cref="_parentRenderCount"/> is passed to the child as <see cref="RenderCounter.ParentRenderCount"/>
 /// so that every time Memo allows a re-render, the child receives a changed parameter and
@@ -26,6 +21,9 @@ internal sealed class MemoParent : ComponentBase
     public object?[]? Keys { get; set; }
 
     [Parameter]
+    public bool Deep { get; set; }
+
+    [Parameter]
     public string? ChildText { get; set; }
 
     public RenderCounter? Child { get; private set; }
@@ -36,8 +34,9 @@ internal sealed class MemoParent : ComponentBase
 
         builder.OpenComponent<Memo>(0);
         builder.AddAttribute(1, nameof(Memo.Keys), Keys);
+        builder.AddAttribute(2, nameof(Memo.Deep), Deep);
         builder.AddAttribute(
-            2,
+            3,
             nameof(Memo.ChildContent),
             (RenderFragment)(
                 b =>

@@ -8,7 +8,8 @@ public class MemoNestedCollectionsTests : MemoTestBase
     public void SameNestedCollectionKey_Freezes()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(
+            p.Add(c => c.Deep, true)
+                .Add(
                     c => c.Keys,
                     [
                         new List<List<string>>
@@ -22,7 +23,8 @@ public class MemoNestedCollectionsTests : MemoTestBase
         );
 
         cut.Render(p =>
-            p.Add(
+            p.Add(c => c.Deep, true)
+                .Add(
                     c => c.Keys,
                     [
                         new List<List<string>>
@@ -42,7 +44,8 @@ public class MemoNestedCollectionsTests : MemoTestBase
     public void DifferentNestedCollectionKey_ReRenders()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(
+            p.Add(c => c.Deep, true)
+                .Add(
                     c => c.Keys,
                     [
                         new List<List<string>>
@@ -56,7 +59,8 @@ public class MemoNestedCollectionsTests : MemoTestBase
         );
 
         cut.Render(p =>
-            p.Add(
+            p.Add(c => c.Deep, true)
+                .Add(
                     c => c.Keys,
                     [
                         new List<List<string>>

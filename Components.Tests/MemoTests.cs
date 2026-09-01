@@ -176,11 +176,15 @@ public sealed class MemoTests : MemoTestBase
             yield return 2;
         }
 
-        var cut = Render<MemoParent>(p => p.Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "x"));
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "x")
+        );
 
         var enumerationsAfterFirstRender = enumerations;
 
-        cut.Render(p => p.Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "y")
+        );
 
         AssertChildRenders(cut.Instance.Child!, 1);
         Assert.True(enumerations > enumerationsAfterFirstRender);
@@ -199,11 +203,15 @@ public sealed class MemoTests : MemoTestBase
             yield return enumerations; // 1 after initial render, 2 on second render
         }
 
-        var cut = Render<MemoParent>(p => p.Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "x"));
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "x")
+        );
 
         var enumerationsAfterFirstRender = enumerations;
 
-        cut.Render(p => p.Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [Query()]).Add(c => c.ChildText, "y")
+        );
 
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.True(enumerations > enumerationsAfterFirstRender);
@@ -231,12 +239,14 @@ public sealed class MemoTests : MemoTestBase
         }
 
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [FirstQuery()]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [FirstQuery()]).Add(c => c.ChildText, "x")
         );
 
         var enumerationsAfterFirstRender = firstQueryEnumerations;
 
-        cut.Render(p => p.Add(c => c.Keys, [SecondQuery()]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [SecondQuery()]).Add(c => c.ChildText, "y")
+        );
 
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.True(
@@ -249,29 +259,39 @@ public sealed class MemoTests : MemoTestBase
     public void ImmutableArrayDefaultKey_DoesNotThrow()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [default(ImmutableArray<int>)]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [default(ImmutableArray<int>)])
+                .Add(c => c.ChildText, "x")
         );
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [default(ImmutableArray<int>)]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [default(ImmutableArray<int>)])
+                .Add(c => c.ChildText, "y")
         );
         AssertChildRenders(cut.Instance.Child!, 1);
         Assert.Equal("x-1", cut.Markup);
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [ImmutableArray.Create(1, 2)]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [ImmutableArray.Create(1, 2)])
+                .Add(c => c.ChildText, "y")
         );
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.Equal("y-3", cut.Markup);
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [ImmutableArray.Create(1, 2)]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [ImmutableArray.Create(1, 2)])
+                .Add(c => c.ChildText, "y")
         );
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.Equal("y-3", cut.Markup);
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [default(ImmutableArray<int>)]).Add(c => c.ChildText, "z")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [default(ImmutableArray<int>)])
+                .Add(c => c.ChildText, "z")
         );
         AssertChildRenders(cut.Instance.Child!, 3);
         Assert.Equal("z-5", cut.Markup);
@@ -286,9 +306,13 @@ public sealed class MemoTests : MemoTestBase
         var second = new List<object>();
         second.Add(second);
 
-        var cut = Render<MemoParent>(p => p.Add(c => c.Keys, [first]).Add(c => c.ChildText, "x"));
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [first]).Add(c => c.ChildText, "x")
+        );
 
-        cut.Render(p => p.Add(c => c.Keys, [second]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true).Add(c => c.Keys, [second]).Add(c => c.ChildText, "y")
+        );
 
         // After max depth recursive calls, the comparison resolves as not equal so we re-render
         AssertChildRenders(cut.Instance.Child!, 2);
@@ -299,14 +323,24 @@ public sealed class MemoTests : MemoTestBase
     public void DeeplyNestedCollections_AreComparedWithinDepthLimit()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [BuildNested(8, "leaf")]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [BuildNested(8, "leaf")])
+                .Add(c => c.ChildText, "x")
         );
 
-        cut.Render(p => p.Add(c => c.Keys, [BuildNested(8, "leaf")]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [BuildNested(8, "leaf")])
+                .Add(c => c.ChildText, "y")
+        );
         AssertChildRenders(cut.Instance.Child!, 1);
         Assert.Equal("x-1", cut.Markup);
 
-        cut.Render(p => p.Add(c => c.Keys, [BuildNested(8, "changed")]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [BuildNested(8, "changed")])
+                .Add(c => c.ChildText, "y")
+        );
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.Equal("y-3", cut.Markup);
     }
@@ -315,19 +349,33 @@ public sealed class MemoTests : MemoTestBase
     public void NestingBeyondDepthLimit_ReportsChanged()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [BuildNested(31, "leaf")]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [BuildNested(31, "leaf")])
+                .Add(c => c.ChildText, "x")
         );
 
-        cut.Render(p => p.Add(c => c.Keys, [BuildNested(31, "leaf")]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [BuildNested(31, "leaf")])
+                .Add(c => c.ChildText, "y")
+        );
         AssertChildRenders(cut.Instance.Child!, 1);
         Assert.Equal("x-1", cut.Markup);
 
-        cut.Render(p => p.Add(c => c.Keys, [BuildNested(32, "leaf")]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [BuildNested(32, "leaf")])
+                .Add(c => c.ChildText, "y")
+        );
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.Equal("y-3", cut.Markup);
 
         // Identical again, but too deep to prove it, so re-renders every time.
-        cut.Render(p => p.Add(c => c.Keys, [BuildNested(32, "leaf")]).Add(c => c.ChildText, "z"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [BuildNested(32, "leaf")])
+                .Add(c => c.ChildText, "z")
+        );
         AssertChildRenders(cut.Instance.Child!, 3);
         Assert.Equal("z-4", cut.Markup);
     }
@@ -336,16 +384,26 @@ public sealed class MemoTests : MemoTestBase
     public void ByteArrayKey_IsComparedByValue()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new byte[] { 1, 2, 3 }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new byte[] { 1, 2, 3 }])
+                .Add(c => c.ChildText, "x")
         );
 
         Assert.Equal("x-1", cut.Markup);
 
-        cut.Render(p => p.Add(c => c.Keys, [new byte[] { 1, 2, 3 }]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new byte[] { 1, 2, 3 }])
+                .Add(c => c.ChildText, "y")
+        );
         AssertChildRenders(cut.Instance.Child!, 1);
         Assert.Equal("x-1", cut.Markup);
 
-        cut.Render(p => p.Add(c => c.Keys, [new byte[] { 1, 2, 4 }]).Add(c => c.ChildText, "y"));
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new byte[] { 1, 2, 4 }])
+                .Add(c => c.ChildText, "y")
+        );
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.Equal("y-3", cut.Markup);
     }
@@ -354,18 +412,24 @@ public sealed class MemoTests : MemoTestBase
     public void TimeOnlyArrayKey_IsComparedByValue()
     {
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new[] { new TimeOnly(9, 0) }]).Add(c => c.ChildText, "x")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new[] { new TimeOnly(9, 0) }])
+                .Add(c => c.ChildText, "x")
         );
         Assert.Equal("x-1", cut.Markup);
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new[] { new TimeOnly(9, 0) }]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new[] { new TimeOnly(9, 0) }])
+                .Add(c => c.ChildText, "y")
         );
         AssertChildRenders(cut.Instance.Child!, 1);
         Assert.Equal("x-1", cut.Markup);
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new[] { new TimeOnly(9, 30) }]).Add(c => c.ChildText, "y")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new[] { new TimeOnly(9, 30) }])
+                .Add(c => c.ChildText, "y")
         );
         AssertChildRenders(cut.Instance.Child!, 2);
         Assert.Equal("y-3", cut.Markup);
