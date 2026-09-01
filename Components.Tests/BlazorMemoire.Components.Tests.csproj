@@ -21,6 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Components\Components.csproj" />
+    <ProjectReference Include="..\Components\BlazorMemoire.Components.csproj" />
   </ItemGroup>
 </Project>

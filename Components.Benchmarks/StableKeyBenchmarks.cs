@@ -21,58 +21,64 @@ public class StableKeyBenchmarks
     private BenchHost _shouldRender = null!;
 
     [GlobalSetup]
-    public void Setup()
+    public async Task Setup()
     {
         _renderer = new BenchRenderer();
 
-        _direct = Attach(new BenchHost { Mode = BenchHost.RenderMode.Direct, Work = Work });
+        _direct = await Attach(new BenchHost { Mode = BenchHost.RenderMode.Direct, Work = Work })
+            .ConfigureAwait(false);
 
-        _memoShallow = Attach(
-            new BenchHost
-            {
-                Mode = BenchHost.RenderMode.MemoShallow,
-                Work = Work,
-                Keys = new object?[] { 0 },
-            }
-        );
-
-        _memoDeep = Attach(
-            new BenchHost
-            {
-                Mode = BenchHost.RenderMode.MemoDeep,
-                Work = Work,
-                Keys = new object?[]
+        _memoShallow = await Attach(
+                new BenchHost
                 {
-                    new List<int> { 1, 2, 3 },
-                },
-            }
-        );
+                    Mode = BenchHost.RenderMode.MemoShallow,
+                    Work = Work,
+                    Keys = new object?[] { 0 },
+                }
+            )
+            .ConfigureAwait(false);
 
-        _shouldRender = Attach(
-            new BenchHost
-            {
-                Mode = BenchHost.RenderMode.ShouldRender,
-                Work = Work,
-                KeyValue = 0,
-            }
-        );
+        _memoDeep = await Attach(
+                new BenchHost
+                {
+                    Mode = BenchHost.RenderMode.MemoDeep,
+                    Work = Work,
+                    Keys = new object?[]
+                    {
+                        new List<int> { 1, 2, 3 },
+                    },
+                }
+            )
+            .ConfigureAwait(false);
+
+        _shouldRender = await Attach(
+                new BenchHost
+                {
+                    Mode = BenchHost.RenderMode.ShouldRender,
+                    Work = Work,
+                    KeyValue = 0,
+                }
+            )
+            .ConfigureAwait(false);
     }
 
-    private BenchHost Attach(BenchHost host)
+    // The continuation here only returns the host and never touches renderer state,
+    // so ConfigureAwait(false) is safe and avoids capturing context.
+    private async Task<BenchHost> Attach(BenchHost host)
     {
-        _renderer.AttachAndRender(host);
+        await _renderer.AttachAndRenderAsync(host).ConfigureAwait(false);
         return host;
     }
 
     [Benchmark(Baseline = true)]
-    public void NoMemo() => _renderer.Invoke(_direct.ForceRender);
+    public Task NoMemo() => _renderer.InvokeAsync(_direct.ForceRender);
 
     [Benchmark]
-    public void MemoShallow() => _renderer.Invoke(_memoShallow.ForceRender);
+    public Task MemoShallow() => _renderer.InvokeAsync(_memoShallow.ForceRender);
 
     [Benchmark]
-    public void MemoDeep() => _renderer.Invoke(_memoDeep.ForceRender);
+    public Task MemoDeep() => _renderer.InvokeAsync(_memoDeep.ForceRender);
 
     [Benchmark]
-    public void ShouldRender() => _renderer.Invoke(_shouldRender.ForceRender);
+    public Task ShouldRender() => _renderer.InvokeAsync(_shouldRender.ForceRender);
 }

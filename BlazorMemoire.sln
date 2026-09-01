@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Components", "Components\Components.csproj", "{73989B65-5AA3-4600-ADBD-9F7CFBD0B190}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorMemoire.Components", "Components\BlazorMemoire.Components.csproj", "{73989B65-5AA3-4600-ADBD-9F7CFBD0B190}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Components.Tests", "Components.Tests\Components.Tests.csproj", "{5343058F-A1F9-4F2F-8F45-5DA6C74CED95}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components.Benchmarks", "Components.Benchmarks", "{28E0E640-D380-5631-77AE-6668E4D3A4A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorMemoire.Components.Tests", "Components.Tests\BlazorMemoire.Components.Tests.csproj", "{5343058F-A1F9-4F2F-8F45-5DA6C74CED95}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorMemoire.Components.Benchmarks", "Components.Benchmarks\BlazorMemoire.Components.Benchmarks.csproj", "{3D43A942-BC4E-432B-BAA9-C69C1F8AC6AA}"
 EndProject
@@ -57,8 +55,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{3D43A942-BC4E-432B-BAA9-C69C1F8AC6AA} = {28E0E640-D380-5631-77AE-6668E4D3A4A0}
 	EndGlobalSection
 EndGlobal

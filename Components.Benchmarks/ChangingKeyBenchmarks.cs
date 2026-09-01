@@ -22,31 +22,38 @@ public class ChangingKeyBenchmarks
     private int _counter;
 
     [GlobalSetup]
-    public void Setup()
+    public async Task Setup()
     {
         _renderer = new BenchRenderer();
 
-        _direct = Attach(new BenchHost { Mode = BenchHost.RenderMode.Direct, Work = Work });
-        _memoShallow = Attach(
-            new BenchHost { Mode = BenchHost.RenderMode.MemoShallow, Work = Work }
-        );
-        _memoDeep = Attach(new BenchHost { Mode = BenchHost.RenderMode.MemoDeep, Work = Work });
+        _direct = await Attach(new BenchHost { Mode = BenchHost.RenderMode.Direct, Work = Work })
+            .ConfigureAwait(false);
+        _memoShallow = await Attach(
+                new BenchHost { Mode = BenchHost.RenderMode.MemoShallow, Work = Work }
+            )
+            .ConfigureAwait(false);
+        _memoDeep = await Attach(
+                new BenchHost { Mode = BenchHost.RenderMode.MemoDeep, Work = Work }
+            )
+            .ConfigureAwait(false);
     }
 
-    private BenchHost Attach(BenchHost host)
+    // The continuation here only returns the host and never touches renderer state,
+    // so ConfigureAwait(false) is safe and avoids capturing context.
+    private async Task<BenchHost> Attach(BenchHost host)
     {
-        _renderer.AttachAndRender(host);
+        await _renderer.AttachAndRenderAsync(host).ConfigureAwait(false);
         return host;
     }
 
     [Benchmark(Baseline = true)]
-    public void NoMemo() => _renderer.Invoke(_direct.ForceRender);
+    public Task NoMemo() => _renderer.InvokeAsync(_direct.ForceRender);
 
     [Benchmark]
-    public void MemoShallow_ChangingKeys()
+    public Task MemoShallow_ChangingKeys()
     {
         var next = ++_counter;
-        _renderer.Invoke(() =>
+        return _renderer.InvokeAsync(() =>
         {
             _memoShallow.Keys = new object?[] { next };
             _memoShallow.ForceRender();
@@ -54,10 +61,10 @@ public class ChangingKeyBenchmarks
     }
 
     [Benchmark]
-    public void MemoDeep_ChangingKeys()
+    public Task MemoDeep_ChangingKeys()
     {
         var next = ++_counter;
-        _renderer.Invoke(() =>
+        return _renderer.InvokeAsync(() =>
         {
             _memoDeep.Keys = new object?[]
             {
