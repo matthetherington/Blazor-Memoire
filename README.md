@@ -105,7 +105,7 @@ is treated as a key change and forces a re-render.
 | Content of collections / nested structures you rebuild often  | `Deep="true"`                              |
 | Content of lazy `IEnumerable` snapshots                       | `Deep="true"`                              |
 
-### Performance
+### Modes
 
 - **Default mode** is the most performant option with a single O(n) pass over the keys, calling each
   element's `object.Equals` method. No reflection, no boxing beyond what the `object?` keys already carry,
@@ -119,7 +119,7 @@ is treated as a key change and forces a re-render.
   expensive-to-enumerate objects unless a simpler memo key for it cannot be derived. Primitive-element arrays
   and lists still take an internal `Span` fast-path.
 
-## Benchmarks
+## Performance & Benchmarks
 
 The repository includes a [BenchmarkDotNet](https://benchmarkdotnet.org/) project
 (`Components.Benchmarks`) that drives the real Blazor render pipeline through a minimal
@@ -130,25 +130,34 @@ with `dotnet run -c Release --project Components.Benchmarks -- --filter "*"`.
 freezes its child so the child's render work never runs. Measuring a parent re-render where
 the child does a varying amount of work:
 
-| Child render cost | No `<Memo>` | With `<Memo>` (stable keys) |
-|-------------------|-------------|-----------------------------|
-| Trivial           | baseline    | ~1.0× (roughly break-even)  |
-| Moderate          | baseline    | ~0.75×                      |
+| Child render cost | No `<Memo>` | With `<Memo>` (stable keys)           |
+|-------------------|-------------|---------------------------------------|
+| Trivial           | baseline    | ~1.0× (roughly break-even)            |
+| Moderate          | baseline    | ~0.75×                                |
 | Expensive         | baseline    | ~0.08× (an order of magnitude faster) |
 
-The wrapper costs a few hundred nanoseconds per render, so for a genuinely trivial child it
-roughly breaks even; the benefit grows quickly as the wrapped subtree gets more expensive.
-Shallow and deep mode perform almost identically here, because a frozen subtree runs neither.
+The wrapper adds *negligible* time overhead per-render (nanoseconds, within measurement noise), and allocates 0 bytes, 
+with dictionaries being the sole exception due to boxing.
+
+A trivial child has almost no work to skip, so the net performance gain is roughly zero; the benefit grows quickly 
+as the wrapped subtree gets more expensive, however.
+
+Shallow and deep mode perform almost identically with stable keys, because a frozen child skips its render work in 
+either mode; the only difference between them is key-comparison cost, which is negligible for simple keys.
 
 **When keys change every render, `<Memo>` can't help** — it pays for the key comparison and
 then re-renders anyway, costing roughly 2× the un-memoised baseline. Reserve `<Memo>` for
 subtrees that are actually stable most of the time.
 
-**Comparison cost (default vs `Deep="true"`)** is only relevant while keys *are* changing.
-The default per-key `object.Equals` is effectively free. Deep comparison scales with the
-size and shape of the keys: primitive arrays and lists stay in the nanoseconds via a span
-fast-path, records and sets grow linearly, and large dictionaries are the most expensive
-case. In short: prefer the default, and keep `Deep="true"` keys small.
+**The overhead of `Deep="true"` versus `Deep="false"` is paid on every render** — `<Memo>` must compare the keys to 
+decide whether to freeze the child, even when they're unchanged. That cost is negligible when rendering work is skipped, 
+but it's pure overhead when keys change and rendering work happens anyway. The default per-key `object.Equals` 
+comparison is effectively free either way.
+
+The performance cost of deep comparison scales with the size and shape of the keys: primitive arrays and lists stay in the 
+nanoseconds via a `Span` fast-path, records and sets grow linearly, and large dictionaries are the most expensive case. 
+
+In short: prefer the default, and keep keys small with `Deep="true"`.
 
 ## Requirements
 
