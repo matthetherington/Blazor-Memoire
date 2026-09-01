@@ -22,6 +22,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <SupportedPlatform Include="browser" />
     <InternalsVisibleTo Include="BlazorMemoire.Components.Tests" />
+    <InternalsVisibleTo Include="BlazorMemoire.Components.Benchmarks" />
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

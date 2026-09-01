@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>BlazorMemoire.Components.Benchmarks</AssemblyName>
+    <RootNamespace>BlazorMemoire.Components.Benchmarks</RootNamespace>
+
+    <!-- BenchmarkDotNet requires optimized, non-debuggable assemblies. -->
+    <Optimize>true</Optimize>
+
+    <!-- Benchmark methods are public instance members by design and hosts are simple
+         render harnesses, so relax a few style/analyzer rules that fight that shape. -->
+    <NoWarn>$(NoWarn);BL0006;CA1822;CA1050;CA1707;CA5394;MA0004;MA0048;MA0051;MA0016;MA0002;CA1002;CA1819;MA0110</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.16.0-preview.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Components\Components.csproj" />
+  </ItemGroup>
+</Project>

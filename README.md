@@ -119,6 +119,37 @@ is treated as a key change and forces a re-render.
   expensive-to-enumerate objects unless a simpler memo key for it cannot be derived. Primitive-element arrays
   and lists still take an internal `Span` fast-path.
 
+## Benchmarks
+
+The repository includes a [BenchmarkDotNet](https://benchmarkdotnet.org/) project
+(`Components.Benchmarks`) that drives the real Blazor render pipeline through a minimal
+renderer. The numbers below are illustrative (Apple M1 Max, .NET 10) — run them yourself
+with `dotnet run -c Release --project Components.Benchmarks -- --filter "*"`.
+
+**Memoisation pays off in proportion to the work it skips.** With stable keys, a `<Memo>`
+freezes its child so the child's render work never runs. Measuring a parent re-render where
+the child does a varying amount of work:
+
+| Child render cost | No `<Memo>` | With `<Memo>` (stable keys) |
+|-------------------|-------------|-----------------------------|
+| Trivial           | baseline    | ~1.0× (roughly break-even)  |
+| Moderate          | baseline    | ~0.75×                      |
+| Expensive         | baseline    | ~0.08× (an order of magnitude faster) |
+
+The wrapper costs a few hundred nanoseconds per render, so for a genuinely trivial child it
+roughly breaks even; the benefit grows quickly as the wrapped subtree gets more expensive.
+Shallow and deep mode perform almost identically here, because a frozen subtree runs neither.
+
+**When keys change every render, `<Memo>` can't help** — it pays for the key comparison and
+then re-renders anyway, costing roughly 2× the un-memoised baseline. Reserve `<Memo>` for
+subtrees that are actually stable most of the time.
+
+**Comparison cost (default vs `Deep="true"`)** is only relevant while keys *are* changing.
+The default per-key `object.Equals` is effectively free. Deep comparison scales with the
+size and shape of the keys: primitive arrays and lists stay in the nanoseconds via a span
+fast-path, records and sets grow linearly, and large dictionaries are the most expensive
+case. In short: prefer the default, and keep `Deep="true"` keys small.
+
 ## Requirements
 
 - .NET 9.0 or .NET 10.0
