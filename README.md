@@ -11,7 +11,8 @@ A Blazor `<Memo>` component, similar to React's [`useMemo`](https://react.dev/re
 ## Why memoisation?
 
 Blazor re-renders a child whenever its parent renders, but not always. `ComponentBase` has a built-in optimization: 
-\if a component's parameters are all primitive, immutable types (`string`, `int`, `bool`, `DateTime`, and friends) and 
+if a component's parameters are all primitive, immutable types (`string`, `int`, `bool`, `DateTime`, etc - 
+[see all](https://github.com/dotnet/aspnetcore/blob/main/src/Components/Components/src/ChangeDetection.cs#L48)) and 
 none of their values changed, Blazor skips the re-render for you. That's why simple components often feel "free":
 the framework is quietly detecting that nothing changed.
 
