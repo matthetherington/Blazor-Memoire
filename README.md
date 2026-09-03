@@ -17,14 +17,14 @@ none of their values changed, Blazor skips the re-render for you. That's why sim
 the framework is quietly detecting that nothing changed.
 
 That optimization only covers primitives though. As soon as a component takes a complex parameter, for example an 
-object, a `List<int>`, a `string[]`, a record, or a callback, Blazor can no longer prove it's unchanged, so it plays 
+object, a `List<int>`, a `string[]`, a record, or `Action` / `Func<T>`, Blazor can no longer prove it's unchanged, so it plays 
 it safe and re-renders every time the parent does. This often catches people out because a component that rendered 
 efficiently for weeks suddenly starts re-rendering on every parent update, and the only thing that changed was adding 
 a non-primitive parameter. Nothing looks obviously wrong, and there's no warning, the free change detection just 
 stopped applying.
 
-When a subtree does heavy work on render, expensive computation, network calls, database queries, etc, redundant renders
-can really add up.
+When a subtree does heavy work on render or in response to parameter changes, or makes network calls and database 
+queries, those redundant renders can really add up, slowing things down for users and increasing system load.
 
 ## Why BlazorMemoire?
 
@@ -194,9 +194,12 @@ but it's pure overhead when keys change and rendering work happens anyway. The d
 comparison is effectively free either way.
 
 The performance cost of deep comparison scales with the size and shape of the keys: primitive arrays and lists stay in the 
-nanoseconds via a `Span` fast-path, records and sets grow linearly, and large dictionaries are the most expensive case. 
+nanoseconds via a `Span` fast-path, records and sets grow linearly. Dictionaries are the most expensive case, but 
+for a small set of keys and dictionaries with a small number of items, as is typically the case for parameters, the 
+savings by eliminating work easily outweigh the performance overhead. 
 
-In short: prefer the default, and keep keys small with `Deep="true"`.
+In short: prefer the default of `Deep="false"`, and keep keys small when using `Deep="true"`. 
+Use `<Memo>` in a targeted fashion where it is of most benefit instead of applying it by default.
 
 ## Requirements
 
