@@ -13,7 +13,7 @@ lifecycle methods fire only when there's been a true change.
 ## Why memoisation?
 
 Blazor re-renders a child whenever its parent renders, but not always. `ComponentBase` has a built-in optimisation: 
-if a component's parameters are all primitive, immutable types (`string`, `int`, `bool`, `DateTime`, etc - 
+if a component's parameters are all primitive, immutable types (`string`, `int`, `bool`, `Guid`, `DateTime`, etc - 
 [see all](https://github.com/dotnet/aspnetcore/blob/main/src/Components/Components/src/ChangeDetection.cs#L48)) and 
 none of their values changed, Blazor skips the re-render for you. That's why simple components often feel "free":
 the framework is quietly detecting that nothing changed.
