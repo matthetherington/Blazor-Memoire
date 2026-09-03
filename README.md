@@ -78,7 +78,7 @@ Wrap any subtree in a `<Memo>` component and provide dependency keys. The child 
 |----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `null`         | No memoisation. Renders on every parent render.                                                                                                         |
 | `[]`           | Render once, freeze forever.                                                                                                                            |
-| `[a, b, c]`    | Re-render only when a, b, or c changes.                                                                                                                 |
+| `[a, b, c]`    | Re-render only when `a`, `b`, or `c` changes.                                                                                                                 |
 | `Deep="false"` | **Default.** Each existing key element is compared with the incoming key element via its own `object.Equals` (reference equality for most collections). |
 | `Deep="true"`  | Opt-in to deep structural comparison of key elements (collections, nesting).                                                                            |
 
