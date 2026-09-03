@@ -25,8 +25,8 @@ efficiently for weeks suddenly starts re-rendering on every parent update, and t
 a non-primitive parameter. Nothing looks obviously wrong, and there's no warning, the free change detection just 
 stopped applying.
 
-When a subtree does heavy work on render or in response to parameter changes, or makes network calls and database 
-queries, those redundant renders can really add up, slowing things down for users and increasing system load.
+When a subtree does heavy work or makes network calls and database queries on render, or in response to parameter 
+changes, those redundant renders can really add up, slowing things down for users and increasing system load.
 
 ## Why BlazorMemoire?
 
