@@ -22,8 +22,8 @@ That optimisation only covers primitives though. As soon as a component takes a 
 object, a `List<int>`, a `string[]`, a record, or `Action` / `Func<T>`, Blazor can no longer prove it's unchanged, so it plays 
 it safe and re-renders every time the parent does. This often catches people out because a component that rendered 
 efficiently for weeks suddenly starts re-rendering on every parent update, and the only thing that changed was adding 
-a non-primitive parameter. Nothing looks obviously wrong, and there's no warning, the free change detection just 
-stopped applying.
+a non-primitive parameter. Nothing looks obviously wrong, and there's no warning, the change detection just stopped 
+applying.
 
 When a subtree does heavy work or makes network calls and database queries on render, or in response to parameter 
 changes, those redundant renders can really add up, slowing things down for users and increasing system load.
