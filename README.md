@@ -67,12 +67,12 @@ Wrap any subtree in a `<Memo>` component and provide dependency keys. The child 
 ```razor
 @using BlazorMemoire.Components
 
-<Memo Keys="@([user.Id, selectedTab])">
+<Memo Keys="@([user.Id, selectedTab])" Deep="@false">
     <ExpensiveChildComponent User="user" Tab="selectedTab" />
 </Memo>
 ```
 
-### `Keys` behaviour
+### `Keys` behaviour and comparison options
 
 | `Keys` value   | Behaviour                                                                                                                                               |
 |----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
