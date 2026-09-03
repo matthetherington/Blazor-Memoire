@@ -6,17 +6,19 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/matthetherington/Blazor-Memoire/publish.yml?style=for-the-badge&label=Publish%20to%20NuGet&labelColor=143642&color=FE5F55)](https://github.com/matthetherington/Blazor-Memoire/actions/workflows/publish.yml)
 
-A Blazor `<Memo>` component, similar to React's [`useMemo`](https://react.dev/reference/react/useMemo#skipping-re-rendering-of-components) that freezes its child subtree until explicit dependency keys change, preventing unnecessary re-renders.
+A Blazor `<Memo>` component, similar to React's [`useMemo`](https://react.dev/reference/react/useMemo#skipping-re-rendering-of-components) 
+that freezes its child subtree until explicit dependency keys change, preventing unnecessary re-renders and making 
+lifecycle methods fire only when there's been a true change.
 
 ## Why memoisation?
 
-Blazor re-renders a child whenever its parent renders, but not always. `ComponentBase` has a built-in optimization: 
+Blazor re-renders a child whenever its parent renders, but not always. `ComponentBase` has a built-in optimisation: 
 if a component's parameters are all primitive, immutable types (`string`, `int`, `bool`, `DateTime`, etc - 
 [see all](https://github.com/dotnet/aspnetcore/blob/main/src/Components/Components/src/ChangeDetection.cs#L48)) and 
 none of their values changed, Blazor skips the re-render for you. That's why simple components often feel "free":
 the framework is quietly detecting that nothing changed.
 
-That optimization only covers primitives though. As soon as a component takes a complex parameter, for example an 
+That optimisation only covers primitives though. As soon as a component takes a complex parameter, for example an 
 object, a `List<int>`, a `string[]`, a record, or `Action` / `Func<T>`, Blazor can no longer prove it's unchanged, so it plays 
 it safe and re-renders every time the parent does. This often catches people out because a component that rendered 
 efficiently for weeks suddenly starts re-rendering on every parent update, and the only thing that changed was adding 
