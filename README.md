@@ -28,17 +28,17 @@ applying.
 When a subtree does heavy work or makes network calls and database queries in response to parameter changes, or on 
 render, those redundant renders can really add up, slowing things down for users and increasing system load.
 
-## Why BlazorMemoire?
+## Why `<Memo>`?
 
-`<Memo>` lets you wrap any subtree and provide a set of dependency keys. The subtree renders once, then stays frozen 
+BlazorMemoire's `<Memo>` lets you wrap any subtree and provide a set of dependency keys. The subtree renders once, then stays frozen 
 until one or more keys change. No new parameters flow in, no lifecycle methods fire, and nothing downstream re-renders 
 unless you've declared that it should.
 
-- **Skip expensive work.** Freeze subtrees that would otherwise re-run costly logic, queries, or network requests on every parent render.
-- **Control from the call site.** Decide when a subtree updates where you use it, not inside the component.
-- **Works with any component.** Wrap third-party or shared components you can't (or don't want to) modify.
-- **One declaration, whole subtree.** Freeze a component and all its descendants together, without touching their source.
-- **Minimal performance overhead, often a substantial gain.** `<Memo>` is fast, and consumes negligible amounts of memory in nearly all cases. The performance cost of comparing the dependency keys is low, which means `<Memo>` only needs to skips a little rendering work to be a net positive. When used where it will skip a lot of rendering work - the savings can outweigh the cost many times over. 
+- **Skip expensive work:** Freeze subtrees that would otherwise re-run costly logic, queries, or network requests on every parent render.
+- **Control from the call site:** Decide when a subtree updates where you use it, not inside the component.
+- **Works with any component:** Wrap third-party or shared components you can't (or don't want to) modify.
+- **One declaration, whole subtree:** Freeze a component and all its descendants together, without touching their source.
+- **Minimal performance overhead, often a substantial gain:** `<Memo>` is fast, and consumes negligible amounts of memory in nearly all cases. The performance cost of comparing the dependency keys is low, which means `<Memo>` only needs to skips a little rendering work to be a net positive. When used where it will skip a lot of rendering work - the savings can outweigh the cost many times over. 
 
 ## Why not `ShouldRender`?
 
