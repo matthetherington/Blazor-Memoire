@@ -6,7 +6,7 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/matthetherington/Blazor-Memoire/publish.yml?style=for-the-badge&label=Publish%20to%20NuGet&labelColor=143642&color=FE5F55)](https://github.com/matthetherington/Blazor-Memoire/actions/workflows/publish.yml)
 
-A Blazor `<Memo>` component, similar to [`React.memo`](https://react.dev/reference/react/memo) 
+A Blazor `<Memo>` component, similar to [`React.memo`](https://react.dev/reference/react/memo), 
 that freezes its child subtree until explicit dependency keys change, preventing unnecessary re-renders and making 
 lifecycle methods fire only when there's been a true change.
 
