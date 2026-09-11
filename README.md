@@ -68,7 +68,7 @@ Wrap any subtree in a `<Memo>` component and provide dependency keys. The child 
 @using BlazorMemoire.Components
 
 <Memo Keys="@([user.Id, selectedTab])" Deep="@false">
-    <ExpensiveChildComponent User="user" Tab="selectedTab" />
+    <ExpensiveChildComponent User="@user" Tab="@selectedTab" />
 </Memo>
 ```
 
@@ -129,7 +129,7 @@ Set `Deep="true"` to compare key elements by deep value equality instead:
 
 ```razor
 @* Deep mode: equal-content lists compare equal, so the child does NOT re-render. *@
-<Memo Keys="@([new List<int> { 1, 2, 3 }])" Deep="true">
+<Memo Keys="@([new List<int> { 1, 2, 3 }])" Deep="@true">
     <ChildComponent />
 </Memo>
 ```
