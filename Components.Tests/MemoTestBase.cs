@@ -29,6 +29,15 @@ public abstract class MemoTestBase : BunitContext
         return (handled, result);
     }
 
+    protected static (bool Handled, bool Result) InvokeFastDictionaryEqual(
+        object oldValue,
+        object newValue
+    )
+    {
+        var handled = DictionaryComparer.TryFastEqual(oldValue, newValue, 0, out var result);
+        return (handled, result);
+    }
+
     /// <summary>
     /// Builds a set of records, optionally altering the element at <paramref name="changedAt"/>.
     /// A record element type deliberately keeps these off the primitive SetEquals fast path so

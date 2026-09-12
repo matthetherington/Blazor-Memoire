@@ -17,8 +17,8 @@ namespace BlazorMemoire.Components;
 internal static class SequenceComparer
 {
     /// <summary>
-    /// Returns <c>true</c> if the comparison was handled (answer in <paramref name="result"/>),
-    /// <c>false</c> if the caller should fall through to element-wise comparison.
+    /// Returns <see langword="true"/> if the comparison was handled (answer in <paramref name="result"/>),
+    /// <see langword="false"/> if the caller should fall through to element-wise comparison.
     /// </summary>
     internal static bool TryFastEqual(object oldValue, object newValue, out bool result)
     {

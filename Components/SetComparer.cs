@@ -11,8 +11,8 @@ namespace BlazorMemoire.Components;
 internal static class SetComparer
 {
     /// <summary>
-    /// Returns <c>true</c> if the comparison was handled (answer in <paramref name="result"/>),
-    /// <c>false</c> if the caller should fall through to the general matching pass.
+    /// Returns <see langword="true"/> if the comparison was handled (answer in <paramref name="result"/>),
+    /// <see langword="false"/> if the caller should fall through to the general matching pass.
     /// </summary>
     internal static bool TryFastEqual(object oldValue, object newValue, out bool result)
     {

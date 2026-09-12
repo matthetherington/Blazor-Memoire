@@ -154,7 +154,7 @@ is treated as a key change and forces a re-render.
   enumerated or materialised). Prefer this mode with stable references or primitive keys on
   hot render paths.
 - **Deep mode** trades work for convenience, but is still highly performant. It walks collections 
-  element-wise, matches dictionaries by key and sets in an order-insensitive way, and recurses into nested 
+  element-wise, matches dictionaries by key, and sets in an order-insensitive way, and recurses into nested 
   enumerables/collections with a max depth of 32. Lazy enumerables are **fully enumerated and allocated** into arrays 
   on snapshot so their values are stable (this is the main extra cost) so avoid `Deep="true"` with `IEnumerable` keys 
   for very large or expensive-to-enumerate objects unless a simpler memo key for it cannot be derived. Primitive-element 
@@ -177,8 +177,11 @@ the child does a varying amount of work:
 | Moderate          | baseline    | ~0.75×                                |
 | Expensive         | baseline    | ~0.08× (an order of magnitude faster) |
 
-The wrapper adds *negligible* time overhead per-render (nanoseconds, within measurement noise), and allocates 0 bytes, 
-with dictionaries being the sole exception due to boxing.
+The wrapper adds *negligible* time overhead per-render (nanoseconds, within measurement noise), and allocates 0 bytes
+for shallow keys and common deep-comparison collection shapes. Typed fast paths also keep `Dictionary<string, object?>`
+(the usual shape for captured unmatched Blazor attributes), `Dictionary<string, string>`, `Dictionary<string, int>`,
+`Dictionary<int, string>`, and `Dictionary<int, int>` allocation-free. Other dictionary shapes use a general
+non-generic fallback that can allocate due to boxing.
 
 A trivial child has almost no work to skip, so the net performance gain is roughly zero; the benefit grows quickly 
 as the wrapped subtree gets more expensive, however.
@@ -195,10 +198,11 @@ decide whether to freeze the child, even when they're unchanged. That cost is ne
 but it's pure overhead when keys change and rendering work happens anyway. The default per-key `object.Equals` 
 comparison is effectively free either way.
 
-The performance cost of deep comparison scales with the size and shape of the keys: primitive arrays and lists stay in the 
-nanoseconds via a `Span` fast-path, records and sets grow linearly. Dictionaries are the most expensive case, but 
-for a small set of keys and dictionaries with a small number of items, as is typically the case for parameters, the 
-savings by eliminating work easily outweigh the performance overhead. 
+The performance cost of deep comparison scales with the size and shape of the keys: primitive arrays and lists stay in the
+nanoseconds via a `Span` fast-path, while records, sets, and dictionaries grow linearly. Common concrete dictionary shapes
+take typed fast paths that avoid boxing; other dictionary types use the more expensive general fallback. For a small set of
+keys and dictionaries with a small number of items, as is typically the case for parameters, the savings from eliminating
+render work easily outweigh the comparison overhead.
 
 In short: prefer the default of `Deep="false"`, and keep keys small when using `Deep="true"`. 
 Use `<Memo>` in a targeted fashion where it is of most benefit instead of applying it by default.

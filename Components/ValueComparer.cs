@@ -124,6 +124,19 @@ internal static class ValueComparer
             return false;
         }
 
+        if (
+            oldCategory == TypeCategory.Dictionary
+            && DictionaryComparer.TryFastEqual(
+                oldValue,
+                newValue,
+                depth,
+                out var fastDictionaryResult
+            )
+        )
+        {
+            return fastDictionaryResult;
+        }
+
         if (oldCategory == TypeCategory.Dictionary && newValue is IDictionary newDictionary)
         {
             return DictionaryEqual((IDictionary)oldValue, newDictionary, depth);

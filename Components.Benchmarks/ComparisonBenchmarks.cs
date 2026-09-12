@@ -27,6 +27,12 @@ public class ComparisonBenchmarks
     private List<Person> _recordsB = null!;
     private Dictionary<string, int> _dictA = null!;
     private Dictionary<string, int> _dictB = null!;
+    private Dictionary<int, int> _intDictA = null!;
+    private Dictionary<int, int> _intDictB = null!;
+    private Dictionary<string, string> _stringDictA = null!;
+    private Dictionary<string, string> _stringDictB = null!;
+    private Dictionary<string, object?> _attributeDictA = null!;
+    private Dictionary<string, object?> _attributeDictB = null!;
     private HashSet<int> _setA = null!;
     private HashSet<int> _setB = null!;
 
@@ -48,6 +54,23 @@ public class ComparisonBenchmarks
         _dictB = Enumerable
             .Range(0, Size)
             .ToDictionary(i => $"k{i}", i => i, StringComparer.Ordinal);
+
+        _intDictA = Enumerable.Range(0, Size).ToDictionary(i => i, i => i);
+        _intDictB = Enumerable.Range(0, Size).ToDictionary(i => i, i => i);
+
+        _stringDictA = Enumerable
+            .Range(0, Size)
+            .ToDictionary(i => $"k{i}", i => $"v{i}", StringComparer.Ordinal);
+        _stringDictB = Enumerable
+            .Range(0, Size)
+            .ToDictionary(i => $"k{i}", i => $"v{i}", StringComparer.Ordinal);
+
+        _attributeDictA = Enumerable
+            .Range(0, Size)
+            .ToDictionary(i => $"data-{i}", i => (object?)i, StringComparer.Ordinal);
+        _attributeDictB = Enumerable
+            .Range(0, Size)
+            .ToDictionary(i => $"data-{i}", i => (object?)i, StringComparer.Ordinal);
 
         _setA = Enumerable.Range(0, Size).ToHashSet();
         _setB = Enumerable.Range(0, Size).ToHashSet();
@@ -79,6 +102,16 @@ public class ComparisonBenchmarks
 
     [Benchmark]
     public bool Dictionary_Deep() => ValueComparer.ValuesEqual(_dictA, _dictB, 0);
+
+    [Benchmark]
+    public bool IntDictionary_Deep() => ValueComparer.ValuesEqual(_intDictA, _intDictB, 0);
+
+    [Benchmark]
+    public bool StringDictionary_Deep() => ValueComparer.ValuesEqual(_stringDictA, _stringDictB, 0);
+
+    [Benchmark]
+    public bool AttributeDictionary_Deep() =>
+        ValueComparer.ValuesEqual(_attributeDictA, _attributeDictB, 0);
 
     [Benchmark]
     public bool Set_Shallow() => Shallow(_setA, _setB);

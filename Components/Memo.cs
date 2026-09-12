@@ -20,7 +20,7 @@ namespace BlazorMemoire.Components;
 /// By default, key elements are compared with a per-element null-safe
 /// <see cref="object.Equals(object?)"/>. This means collections such as <c>List&lt;T&gt;</c>
 /// are compared by reference, and equal-content-but-distinct instances are treated as changed.
-/// Set <see cref="Deep"/> to <c>true</c> to instead use deep structural comparison via
+/// Set <see cref="Deep"/> to <see langword="true"/> to instead use deep structural comparison via
 /// <see cref="ValueComparer"/> (collections element-wise, records by value, primitives by value).
 ///
 /// The keys snapshot buffer is reused across renders to minimise allocation. In deep mode,
@@ -46,9 +46,9 @@ public sealed class Memo : ComponentBase
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// When <c>false</c> (the default), key elements are compared with a per-element null-safe
+    /// When <see langword="false"/> (the default), key elements are compared with a per-element null-safe
     /// <see cref="object.Equals(object?)"/>. Reference-type collections therefore compare by
-    /// reference. When <c>true</c>, key elements are compared with deep structural equality via
+    /// reference. When <see langword="true"/>, key elements are compared with deep structural equality via
     /// <see cref="ValueComparer"/> (collections element-wise, records by value), and lazy
     /// enumerables are materialised on snapshot. This value is expected to be constant for the
     /// lifetime of a given <see cref="Memo"/> instance; changing it between renders is treated
