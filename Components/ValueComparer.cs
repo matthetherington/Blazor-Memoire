@@ -21,7 +21,8 @@ namespace BlazorMemoire.Components;
 ///   GetHashCode consistency). Sets with a coarser comparer (e.g. OrdinalIgnoreCase) also
 ///   take this path. Fine for typical key-sized sets.
 /// - <b>Dictionary keys use the dictionary's own comparer, not structural equality.</b>
-///   An OrdinalIgnoreCase dictionary won't detect a key casing change. Use ordinal keys.
+///   Typed fast-path dictionaries must share the same comparer instance. A shared
+///   OrdinalIgnoreCase comparer won't detect a key casing change. Use ordinal keys.
 /// - Only dictionaries implementing non-generic <see cref="IDictionary"/> get by-key
 ///   comparison. A hand-rolled IReadOnlyDictionary falls back to positional comparison.
 /// - Comparison stops at depth <see cref="MaxComparisonDepth"/> to prevent stack overflow

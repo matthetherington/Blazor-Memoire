@@ -113,16 +113,17 @@ two nulls are equal and otherwise the stored element's own equality decides. Thi
 > [!NOTE]
 > Wrapping a collection in a `record` does **not** give you content comparison.
 > A record's generated `Equals` compares each field with `EqualityComparer<T>.Default`, and
-> for a `List<T>` field that is reference equality, so two records holding equal-content but
-> distinct lists are still unequal. Use `Deep="true"` (or a type that implements structural
-> `Equals` itself) when you need content comparison.
+> for a `List<T>` field that is reference equality, so two records holding distinct lists with the same contents are 
+> still unequal. Use `Deep="true"` (or a type that implements structural `Equals` itself) when you need content 
+> comparison.
 
 ### Deep structural equality (opt-in with `Deep="true"`)
 
 Set `Deep="true"` to compare key elements by deep value equality instead:
 
 - **Collections** (arrays, lists, dictionaries, sets) are compared element-wise
-- **Dictionaries** are compared by key/value pairs; **sets** compared unordered
+- **Dictionaries** are compared by key/value pairs; optimized concrete dictionary shapes must
+  share the same comparer instance, while **sets** are compared unordered
 - **Nested collections** compared recursively (up to a depth limit of 32, which falls back to always rendering if exceeded)
 - **Lazy enumerables** (LINQ queries, `yield return` generators) are materialised when the
   snapshot is created, so the comparison captures their current values
@@ -136,6 +137,12 @@ Set `Deep="true"` to compare key elements by deep value equality instead:
 
 `Deep` is expected to be constant for a given `<Memo>` instance; changing it between renders
 is treated as a key change and forces a re-render.
+
+> [!NOTE]
+> Dictionary keys are matched with the dictionary's comparer. For the typed fast-path shapes listed in the Performance & 
+> Benchmarks section, a change in the Dictionary comparer is treated as a key change, even when the current entries are 
+> identical. This is unlikely to happen in practice, but `<Memo>` errs on the side of caution and prefers an additional 
+> render to potentially missing an intentional state change. 
 
 ### Choosing a mode
 

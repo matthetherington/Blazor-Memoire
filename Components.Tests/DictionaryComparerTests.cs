@@ -2,6 +2,13 @@ namespace BlazorMemoire.Components.Tests;
 
 public class DictionaryComparerTests : MemoTestBase
 {
+    private sealed class OrdinalStringComparer : IEqualityComparer<string>
+    {
+        public bool Equals(string? x, string? y) => string.Equals(x, y, StringComparison.Ordinal);
+
+        public int GetHashCode(string value) => StringComparer.Ordinal.GetHashCode(value);
+    }
+
     [Fact]
     public void SupportedDictionaryShapes_UseFastPath()
     {
@@ -54,14 +61,52 @@ public class DictionaryComparerTests : MemoTestBase
     }
 
     [Fact]
-    public void IncomingDictionaryComparer_IsUsed()
+    public void DifferentDictionaryComparers_ReturnFalseInBothDirections()
     {
-        var result = InvokeFastDictionaryEqual(
-            new Dictionary<string, int>(StringComparer.Ordinal) { ["a"] = 1 },
-            new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) { ["A"] = 1 }
-        );
+        var ordinal = new Dictionary<string, int>(StringComparer.Ordinal) { ["a"] = 1 };
+        var ignoreCase = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["A"] = 1,
+        };
 
-        Assert.Equal((true, true), result);
+        Assert.Equal((true, false), InvokeFastDictionaryEqual(ordinal, ignoreCase));
+        Assert.Equal((true, false), InvokeFastDictionaryEqual(ignoreCase, ordinal));
+    }
+
+    [Fact]
+    public void SharedCaseInsensitiveComparer_UsesItsKeySemantics()
+    {
+        var oldDictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"] = 1,
+        };
+        var newDictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["A"] = 1,
+        };
+
+        Assert.Equal((true, true), InvokeFastDictionaryEqual(oldDictionary, newDictionary));
+    }
+
+    [Fact]
+    public void EquivalentButDifferentComparerInstances_ReturnFalse()
+    {
+        var oldDictionary = new Dictionary<string, int>(new OrdinalStringComparer()) { ["a"] = 1 };
+        var newDictionary = new Dictionary<string, int>(new OrdinalStringComparer()) { ["a"] = 1 };
+
+        Assert.Equal((true, false), InvokeFastDictionaryEqual(oldDictionary, newDictionary));
+    }
+
+    [Fact]
+    public void ObjectDictionariesWithDifferentComparers_ReturnFalse()
+    {
+        var oldDictionary = new Dictionary<string, object?>(StringComparer.Ordinal) { ["a"] = 1 };
+        var newDictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"] = 1,
+        };
+
+        Assert.Equal((true, false), InvokeFastDictionaryEqual(oldDictionary, newDictionary));
     }
 
     [Fact]

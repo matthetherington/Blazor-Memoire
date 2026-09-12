@@ -3,6 +3,7 @@ namespace BlazorMemoire.Components;
 /// <summary>
 /// Allocation-free comparison for common concrete dictionary shapes. Typed enumeration and
 /// lookup avoid boxing the enumerator, keys, and values through non-generic IDictionary.
+/// Dictionaries must share the same comparer instance to compare equal.
 /// </summary>
 internal static class DictionaryComparer
 {
@@ -43,6 +44,12 @@ internal static class DictionaryComparer
             return false;
         }
 
+        if (!ReferenceEquals(oldDictionary.Comparer, newDictionary.Comparer))
+        {
+            result = false;
+            return true;
+        }
+
         if (oldDictionary.Count != newDictionary.Count)
         {
             result = false;
@@ -76,6 +83,12 @@ internal static class DictionaryComparer
         {
             result = false;
             return false;
+        }
+
+        if (!ReferenceEquals(oldDictionary.Comparer, newDictionary.Comparer))
+        {
+            result = false;
+            return true;
         }
 
         if (oldDictionary.Count != newDictionary.Count)

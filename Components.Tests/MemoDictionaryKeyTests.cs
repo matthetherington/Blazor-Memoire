@@ -140,6 +140,30 @@ public class MemoDictionaryKeyTests : MemoTestBase
     }
 
     [Fact]
+    public void DifferentDictionaryComparer_ReRenders()
+    {
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true)
+                .Add(
+                    c => c.Keys,
+                    [new Dictionary<string, int>(StringComparer.Ordinal) { ["a"] = 1 }]
+                )
+                .Add(c => c.ChildText, "x")
+        );
+
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(
+                    c => c.Keys,
+                    [new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) { ["a"] = 1 }]
+                )
+                .Add(c => c.ChildText, "y")
+        );
+
+        AssertChildRenders(cut.Instance.Child!, 2);
+    }
+
+    [Fact]
     public void ReadOnlyDictionary_FallsBackToPositionalComparison()
     {
         // A dictionary that doesn't implement non-generic IDictionary misses the by-key
