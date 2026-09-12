@@ -135,7 +135,36 @@ Set `Deep="true"` to compare key elements by deep value equality instead:
 </Memo>
 ```
 
-`Deep` is expected to be constant for a given `<Memo>` instance; changing it between renders
+> [!IMPORTANT]
+> When a collection changes, pass a new instance.
+>
+> `Deep="true"` compares the contents of two collection instances, but it does not detect changes
+> made by modifying the same `List`, `Dictionary`, array, or set in place. Avoiding mutation tracking keeps repeat 
+> comparisons allocation-free for supported collection shapes, as detecting in-place mutations would require `<Memo>` to 
+> retain a copy of the collection's previous contents.
+>
+> Instead, replace the collection when it changes:
+>
+> ```csharp
+> var updatedItems = new List<Item>(_items);
+> updatedItems.Add(newItem);
+> _items = updatedItems;
+> ```
+>
+> If the collection must be mutated in place, include a version key and increment it after each change:
+>
+> ```razor
+> <Memo Keys="@([_items, _itemsVersion])" Deep="@true">
+>     <ItemList Items="@_items" />
+> </Memo>
+> ```
+>
+> ```csharp
+> _items.Add(newItem);
+> _itemsVersion++;
+> ```
+
+The value of `Deep` itself is expected to be constant for a given `<Memo>` instance; changing it between renders
 is treated as a key change and forces a re-render.
 
 > [!NOTE]
@@ -150,7 +179,8 @@ is treated as a key change and forces a re-render.
 |---------------------------------------------------------------|--------------------------------------------|
 | Reference identity of a collection you already keep stable    | Default (`Deep="false"`) + reuse instances |
 | Value of primitives, strings, records, enums                  | Default (`Deep="false"`)                   |
-| Content of collections / nested structures you rebuild often  | `Deep="true"`                              |
+| Content of collections replaced when their contents change    | `Deep="true"`                              |
+| Changes to a collection mutated in place                      | Include a scalar version key                |
 | Content of lazy `IEnumerable` snapshots                       | `Deep="true"`                              |
 
 ### Modes
