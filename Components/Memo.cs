@@ -110,15 +110,24 @@ public sealed class Memo : ComponentBase
             return false;
         }
 
-        for (var i = 0; i < snapshot.Length; i++)
+        if (deep)
         {
-            var equal = deep
-                ? ValueComparer.ValuesEqual(snapshot[i], current[i], 0)
-                : ShallowEquals(snapshot[i], current[i]);
-
-            if (!equal)
+            for (var i = 0; i < snapshot.Length; i++)
             {
-                return false;
+                if (!ValueComparer.ValuesEqual(snapshot[i], current[i], 0))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            for (var i = 0; i < snapshot.Length; i++)
+            {
+                if (!ShallowEquals(snapshot[i], current[i]))
+                {
+                    return false;
+                }
             }
         }
 
