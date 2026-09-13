@@ -44,6 +44,34 @@ public class MemoFastSequenceTests : MemoTestBase
             );
         }
 
+        void CheckNullable<T>(string name, T first, T second)
+            where T : struct
+        {
+            Verify(
+                $"{name}?[] equal",
+                InvokeFastSequenceEqual(new T?[] { first, null }, new T?[] { first, null }),
+                true
+            );
+            Verify(
+                $"{name}?[] differing",
+                InvokeFastSequenceEqual(new T?[] { first, null }, new T?[] { second, null }),
+                false
+            );
+            Verify(
+                $"List<{name}?> equal",
+                InvokeFastSequenceEqual(new List<T?> { first, null }, new List<T?> { first, null }),
+                true
+            );
+            Verify(
+                $"List<{name}?> differing",
+                InvokeFastSequenceEqual(
+                    new List<T?> { first, null },
+                    new List<T?> { first, second }
+                ),
+                false
+            );
+        }
+
         Check("string", "a", "b");
         Check("int", 1, 2);
         Check("long", 1L, 2L);
@@ -52,16 +80,34 @@ public class MemoFastSequenceTests : MemoTestBase
         Check("decimal", 1.5m, 2.5m);
         Check("bool", true, false);
         Check("byte", (byte)1, (byte)2);
-        Check("Guid", Guid.Empty, Guid.Parse("6f9619ff-8b86-d011-b42d-00c04fc964ff"));
-        Check("DateTime", new DateTime(2024, 1, 1), new DateTime(2024, 1, 2));
+        Check("Guid", Guid.Empty, Guid.Parse("ba8a58ab-61bd-476e-9b05-2403b51dd2e5"));
+        Check("DateTime", new DateTime(2026, 1, 1), new DateTime(2026, 1, 2));
         Check(
             "DateTimeOffset",
-            new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero),
-            new DateTimeOffset(2024, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero)
         );
-        Check("DateOnly", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 2));
+        Check("DateOnly", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2));
         Check("TimeOnly", new TimeOnly(9, 0), new TimeOnly(9, 30));
         Check("TimeSpan", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
+
+        CheckNullable("int", 1, 2);
+        CheckNullable("long", 1L, 2L);
+        CheckNullable("double", 1.5d, 2.5d);
+        CheckNullable("float", 1.5f, 2.5f);
+        CheckNullable("decimal", 1.5m, 2.5m);
+        CheckNullable("bool", true, false);
+        CheckNullable("byte", (byte)1, (byte)2);
+        CheckNullable("Guid", Guid.Empty, Guid.Parse("ba8a58ab-61bd-476e-9b05-2403b51dd2e5"));
+        CheckNullable("DateTime", new DateTime(2026, 1, 1), new DateTime(2026, 1, 2));
+        CheckNullable(
+            "DateTimeOffset",
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero)
+        );
+        CheckNullable("DateOnly", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2));
+        CheckNullable("TimeOnly", new TimeOnly(9, 0), new TimeOnly(9, 30));
+        CheckNullable("TimeSpan", TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
 
         Assert.True(failures.Count == 0, string.Join("\n", failures));
     }
@@ -75,9 +121,36 @@ public class MemoFastSequenceTests : MemoTestBase
                 new List<NestedRecord> { new("a", 1) }
             ).Handled
         );
+    }
 
-        // Nullables have no IEquatable<T>, so they fall through to the general path.
-        Assert.False(InvokeFastSequenceEqual(new int?[] { 1 }, new int?[] { 1 }).Handled);
+    [Fact]
+    public void NullableSequenceDeepComparison_DoesNotAllocate()
+    {
+        int?[] oldArray = [1, null, 3];
+        int?[] newArray = [1, null, 3];
+        var oldList = new List<int?> { 1, null, 3 };
+        var newList = new List<int?> { 1, null, 3 };
+
+        for (var i = 0; i < 100; i++)
+        {
+            ValueComparer.ValuesEqual(oldArray, newArray, 0);
+            ValueComparer.ValuesEqual(oldList, newList, 0);
+        }
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var equal = false;
+
+        for (var i = 0; i < 1_000; i++)
+        {
+            equal =
+                ValueComparer.ValuesEqual(oldArray, newArray, 0)
+                && ValueComparer.ValuesEqual(oldList, newList, 0);
+        }
+
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.True(equal);
+        Assert.Equal(0, allocated);
     }
 
     [Fact]

@@ -38,11 +38,15 @@ public class MemoRecordKeyTests : MemoTestBase
         // A collection nested inside a record is compared by the record's own generated
         // Equals, which uses reference equality for the list field.
         var cut = Render<MemoParent>(p =>
-            p.Add(c => c.Keys, [new RecordWithList("Alice", [1, 2])]).Add(c => c.ChildText, "a")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new RecordWithList("Alice", [1, 2])])
+                .Add(c => c.ChildText, "a")
         );
 
         cut.Render(p =>
-            p.Add(c => c.Keys, [new RecordWithList("Alice", [1, 2])]).Add(c => c.ChildText, "a")
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new RecordWithList("Alice", [1, 2])])
+                .Add(c => c.ChildText, "a")
         );
 
         AssertChildRenders(cut.Instance.Child!, 2);

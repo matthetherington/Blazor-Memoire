@@ -115,6 +115,39 @@ public class MemoDictionaryKeyTests : MemoTestBase
     }
 
     [Fact]
+    public void NullableDictionaryValue_UsesContentComparison()
+    {
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true)
+                .Add(
+                    c => c.Keys,
+                    [new Dictionary<string, decimal?>(StringComparer.Ordinal) { ["a"] = null }]
+                )
+                .Add(c => c.ChildText, "x")
+        );
+
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(
+                    c => c.Keys,
+                    [new Dictionary<string, decimal?>(StringComparer.Ordinal) { ["a"] = null }]
+                )
+                .Add(c => c.ChildText, "y")
+        );
+        AssertChildRenders(cut.Instance.Child!, 1);
+
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(
+                    c => c.Keys,
+                    [new Dictionary<string, decimal?>(StringComparer.Ordinal) { ["a"] = 1m }]
+                )
+                .Add(c => c.ChildText, "y")
+        );
+        AssertChildRenders(cut.Instance.Child!, 2);
+    }
+
+    [Fact]
     public void CaseInsensitiveDictionaryKey_IsNotDetected()
     {
         // Pins a documented limitation. Keys are matched with the dictionary's own comparer.

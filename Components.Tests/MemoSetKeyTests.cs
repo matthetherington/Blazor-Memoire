@@ -77,6 +77,30 @@ public class MemoSetKeyTests : MemoTestBase
     }
 
     [Fact]
+    public void NullableValueSet_UsesContentComparison()
+    {
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new HashSet<Guid?> { Guid.Empty, null }])
+                .Add(c => c.ChildText, "x")
+        );
+
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new HashSet<Guid?> { null, Guid.Empty }])
+                .Add(c => c.ChildText, "y")
+        );
+        AssertChildRenders(cut.Instance.Child!, 1);
+
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new HashSet<Guid?> { Guid.NewGuid(), null }])
+                .Add(c => c.ChildText, "y")
+        );
+        AssertChildRenders(cut.Instance.Child!, 2);
+    }
+
+    [Fact]
     public void SortedSetInterfaceKey_ComparesUnordered()
     {
         var cut = Render<MemoParent>(p =>

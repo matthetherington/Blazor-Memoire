@@ -172,6 +172,30 @@ public class MemoListKeyTests : MemoTestBase
     }
 
     [Fact]
+    public void NullableValueList_UsesContentComparison()
+    {
+        var cut = Render<MemoParent>(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<int?> { 1, null, 3 }])
+                .Add(c => c.ChildText, "x")
+        );
+
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<int?> { 1, null, 3 }])
+                .Add(c => c.ChildText, "y")
+        );
+        AssertChildRenders(cut.Instance.Child!, 1);
+
+        cut.Render(p =>
+            p.Add(c => c.Deep, true)
+                .Add(c => c.Keys, [new List<int?> { 1, 2, 3 }])
+                .Add(c => c.ChildText, "y")
+        );
+        AssertChildRenders(cut.Instance.Child!, 2);
+    }
+
+    [Fact]
     public void CollectionReplacedByScalar_ReRenders()
     {
         var cut = Render<MemoParent>(p =>

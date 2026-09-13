@@ -21,6 +21,56 @@ internal static class DictionaryComparer
                 return DictionaryEqual(value, newValue, out result);
             case Dictionary<string, int> value:
                 return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, int?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, long> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, long?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, double> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, double?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, float> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, float?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, decimal> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, decimal?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, bool> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, bool?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, byte> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, byte?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, Guid> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, Guid?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, DateTime> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, DateTime?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, DateTimeOffset> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, DateTimeOffset?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, DateOnly> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, DateOnly?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, TimeOnly> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, TimeOnly?> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, TimeSpan> value:
+                return DictionaryEqual(value, newValue, out result);
+            case Dictionary<string, TimeSpan?> value:
+                return DictionaryEqual(value, newValue, out result);
             case Dictionary<int, string> value:
                 return DictionaryEqual(value, newValue, out result);
             case Dictionary<int, int> value:

@@ -114,8 +114,9 @@ two nulls are equal and otherwise the stored element's own equality decides. Thi
 > Wrapping a collection in a `record` does **not** give you content comparison.
 > A record's generated `Equals` compares each field with `EqualityComparer<T>.Default`, and
 > for a `List<T>` field that is reference equality, so two records holding distinct lists with the same contents are 
-> still unequal. Use `Deep="true"` (or a type that implements structural `Equals` itself) when you need content 
-> comparison.
+> still unequal. `Deep="true"` traverses recognized collection keys, but it does not inspect properties of records or
+> other arbitrary objects. Pass the collection as a separate key, or implement structural equality on the record, when
+> its contents should control rendering.
 
 ### Deep structural equality (opt-in with `Deep="true"`)
 
@@ -194,8 +195,9 @@ is treated as a key change and forces a re-render.
   element-wise, matches dictionaries by key, and sets in an order-insensitive way, and recurses into nested 
   enumerables/collections with a max depth of 32. Lazy enumerables are **fully enumerated and allocated** into arrays 
   on snapshot so their values are stable (this is the main extra cost) so avoid `Deep="true"` with `IEnumerable` keys 
-  for very large or expensive-to-enumerate objects unless a simpler memo key for it cannot be derived. Primitive-element 
-  arrays and lists still take an internal `Span` fast-path.
+  for very large or expensive-to-enumerate objects unless a simpler memo key for it cannot be derived. Arrays and lists
+  of supported scalar and nullable scalar types still take an internal `Span` fast-path, while supported `HashSet<T>`
+  values use typed set comparison.
 
 ## Performance & Benchmarks
 
@@ -215,10 +217,30 @@ the child does a varying amount of work:
 | Expensive         | baseline    | ~0.08× (an order of magnitude faster) |
 
 The wrapper adds *negligible* time overhead per-render (nanoseconds, within measurement noise), and allocates 0 bytes
-for shallow keys and common deep-comparison collection shapes. Typed fast paths also keep `Dictionary<string, object?>`
-(the usual shape for captured unmatched Blazor attributes), `Dictionary<string, string>`, `Dictionary<string, int>`,
-`Dictionary<int, string>`, and `Dictionary<int, int>` allocation-free. Other dictionary shapes use a general
-non-generic fallback that can allocate due to boxing.
+for shallow keys and common deep-comparison collection shapes. Typed fast paths cover arrays, lists, and sets containing
+common CLR types:
+
+| CLR type         | Nullable counterpart supported |
+|------------------|--------------------------------|
+| `string`         | N/A                            |
+| `int`            | Yes                            |
+| `long`           | Yes                            |
+| `double`         | Yes                            |
+| `float`          | Yes                            |
+| `decimal`        | Yes                            |
+| `bool`           | Yes                            |
+| `byte`           | Yes                            |
+| `Guid`           | Yes                            |
+| `DateTime`       | Yes                            |
+| `DateTimeOffset` | Yes                            |
+| `DateOnly`       | Yes                            |
+| `TimeOnly`       | Yes                            |
+| `TimeSpan`       | Yes                            |
+
+String-keyed dictionaries with any of these value types or their nullable counterpart are also covered. 
+Additional fast paths cover `Dictionary<string, object?>` (the usual shape for captured unmatched Blazor attributes), 
+`Dictionary<int, string>`, and `Dictionary<int, int>`. Other less common dictionary and collection shapes
+use general fallbacks that can allocate due to boxing.
 
 A trivial child has almost no work to skip, so the net performance gain is roughly zero; the benefit grows quickly 
 as the wrapped subtree gets more expensive, however.

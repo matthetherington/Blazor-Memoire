@@ -22,9 +22,55 @@ internal static class SetComparer
                 return SetEqualCore(value, newValue, out result);
             case HashSet<int> value:
                 return SetEqualCore(value, newValue, out result);
+            case HashSet<int?> value:
+                return SetEqualCore(value, newValue, out result);
             case HashSet<long> value:
                 return SetEqualCore(value, newValue, out result);
+            case HashSet<long?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<double> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<double?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<float> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<float?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<decimal> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<decimal?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<bool> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<bool?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<byte> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<byte?> value:
+                return SetEqualCore(value, newValue, out result);
             case HashSet<Guid> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<Guid?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<DateTime> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<DateTime?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<DateTimeOffset> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<DateTimeOffset?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<DateOnly> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<DateOnly?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<TimeOnly> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<TimeOnly?> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<TimeSpan> value:
+                return SetEqualCore(value, newValue, out result);
+            case HashSet<TimeSpan?> value:
                 return SetEqualCore(value, newValue, out result);
             default:
                 result = false;

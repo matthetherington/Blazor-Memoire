@@ -23,6 +23,8 @@ public class ComparisonBenchmarks
     private int[] _arrayB = null!;
     private List<int> _listA = null!;
     private List<int> _listB = null!;
+    private List<int?> _nullableListA = null!;
+    private List<int?> _nullableListB = null!;
     private List<Person> _recordsA = null!;
     private List<Person> _recordsB = null!;
     private Dictionary<string, int> _dictA = null!;
@@ -33,8 +35,12 @@ public class ComparisonBenchmarks
     private Dictionary<string, string> _stringDictB = null!;
     private Dictionary<string, object?> _attributeDictA = null!;
     private Dictionary<string, object?> _attributeDictB = null!;
+    private Dictionary<string, decimal?> _nullableDictA = null!;
+    private Dictionary<string, decimal?> _nullableDictB = null!;
     private HashSet<int> _setA = null!;
     private HashSet<int> _setB = null!;
+    private HashSet<Guid?> _nullableSetA = null!;
+    private HashSet<Guid?> _nullableSetB = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -44,6 +50,8 @@ public class ComparisonBenchmarks
 
         _listA = Enumerable.Range(0, Size).ToList();
         _listB = Enumerable.Range(0, Size).ToList();
+        _nullableListA = Enumerable.Range(0, Size).Select(i => (int?)i).ToList();
+        _nullableListB = Enumerable.Range(0, Size).Select(i => (int?)i).ToList();
 
         _recordsA = Enumerable.Range(0, Size).Select(i => new Person($"n{i}", i)).ToList();
         _recordsB = Enumerable.Range(0, Size).Select(i => new Person($"n{i}", i)).ToList();
@@ -72,8 +80,17 @@ public class ComparisonBenchmarks
             .Range(0, Size)
             .ToDictionary(i => $"data-{i}", i => (object?)i, StringComparer.Ordinal);
 
+        _nullableDictA = Enumerable
+            .Range(0, Size)
+            .ToDictionary(i => $"k{i}", i => (decimal?)i, StringComparer.Ordinal);
+        _nullableDictB = Enumerable
+            .Range(0, Size)
+            .ToDictionary(i => $"k{i}", i => (decimal?)i, StringComparer.Ordinal);
+
         _setA = Enumerable.Range(0, Size).ToHashSet();
         _setB = Enumerable.Range(0, Size).ToHashSet();
+        _nullableSetA = Enumerable.Range(0, Size).Select(ToNullableGuid).ToHashSet();
+        _nullableSetB = Enumerable.Range(0, Size).Select(ToNullableGuid).ToHashSet();
     }
 
     // Shallow = the default per-key comparison: whole-object Equals (reference for collections).
@@ -90,6 +107,9 @@ public class ComparisonBenchmarks
 
     [Benchmark]
     public bool PrimitiveList_Deep() => ValueComparer.ValuesEqual(_listA, _listB, 0);
+
+    [Benchmark]
+    public bool NullableList_Deep() => ValueComparer.ValuesEqual(_nullableListA, _nullableListB, 0);
 
     [Benchmark]
     public bool RecordList_Shallow() => Shallow(_recordsA, _recordsB);
@@ -114,8 +134,17 @@ public class ComparisonBenchmarks
         ValueComparer.ValuesEqual(_attributeDictA, _attributeDictB, 0);
 
     [Benchmark]
+    public bool NullableDictionary_Deep() =>
+        ValueComparer.ValuesEqual(_nullableDictA, _nullableDictB, 0);
+
+    [Benchmark]
     public bool Set_Shallow() => Shallow(_setA, _setB);
 
     [Benchmark]
     public bool Set_Deep() => ValueComparer.ValuesEqual(_setA, _setB, 0);
+
+    [Benchmark]
+    public bool NullableSet_Deep() => ValueComparer.ValuesEqual(_nullableSetA, _nullableSetB, 0);
+
+    private static Guid? ToNullableGuid(int value) => new Guid(value, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
