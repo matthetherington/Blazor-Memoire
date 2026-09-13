@@ -7,7 +7,7 @@
     <AssemblyName>BlazorMemoire.Components</AssemblyName>
     <RootNamespace>BlazorMemoire.Components</RootNamespace>
     <PackageId>BlazorMemoire</PackageId>
-    <Description>A Blazor memoisation component that freezes its child subtree until explicit dependency keys change, preventing unnecessary re-renders.</Description>
+    <Description>A highly-performant Blazor memo component, similar to React.memo, that freezes its child subtree until explicit dependency keys change, preventing unnecessary re-renders and making lifecycle methods fire only when there's been a true change.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/matthetherington/Blazor-Memoire</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
