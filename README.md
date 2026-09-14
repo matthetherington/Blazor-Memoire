@@ -6,39 +6,77 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/matthetherington/Blazor-Memoire/publish.yml?style=for-the-badge&label=Publish%20to%20NuGet&labelColor=143642&color=FE5F55)](https://github.com/matthetherington/Blazor-Memoire/actions/workflows/publish.yml)
 
-A highly-performant Blazor `<Memo>` component, similar to [`React.memo`](https://react.dev/reference/react/memo), 
-that freezes its child subtree until explicit dependency keys change, preventing unnecessary re-renders and making 
-lifecycle methods fire only when there's been a true change.
+A highly-performant Blazor `<Memo>` component, similar to [`React.memo`](https://react.dev/reference/react/memo),
+that stops parent renders propagating through its child subtree until explicit dependency keys change, preventing
+unnecessary re-renders and making lifecycle methods fire only when there's been a true change.
+
+## Quick start
+
+BlazorMemoire supports .NET 8, .NET 9, and .NET 10 across Blazor Server, WebAssembly,
+and Auto render modes.
+
+```shell
+dotnet add package BlazorMemoire
+```
+
+Wrap a subtree in `<Memo>` and provide the values that should cause it to update via the `Keys` parameter:
+
+```razor
+@using BlazorMemoire.Components
+
+<Memo Keys="@([user.Id, selectedTab])">
+    <ExpensiveChildComponent UserId="@user.Id" Tab="@selectedTab" />
+</Memo>
+```
+
+The child content renders initially, then receives new parameters only when `user.Id` or
+`selectedTab` changes.
+
+### Keys
+
+| `Keys` value  | Behaviour                                                         |
+|---------------|-------------------------------------------------------------------|
+| `null`        | Disable memoisation and render on every parent render.            |
+| `[]`          | Render once, then ignore subsequent parent renders.               |
+| `[a, b, c]`   | Re-render when the key count changes or any key compares unequal. |
+
+Use the default comparison mode unless you specifically need collection contents to be
+compared:
+
+| Mode                     | Behaviour                                                                                    |
+|--------------------------|----------------------------------------------------------------------------------------------|
+| Default (`Deep="false"`) | Calls `object.Equals` for each key. Most collections therefore compare by reference.         |
+| `Deep="true"`            | Compares collection *contents* recursively. Non-collection values still use `object.Equals`. |
 
 ## Why memoisation?
 
-Blazor re-renders a child whenever its parent renders, but not always. `ComponentBase` has a built-in optimisation: 
-if a component's parameters are all primitive, immutable types (`string`, `int`, `bool`, `Guid`, `DateTime`, etc - 
-[see all](https://github.com/dotnet/aspnetcore/blob/main/src/Components/Components/src/ChangeDetection.cs#L48)) and 
+Blazor re-renders a child whenever its parent renders, but not always. `ComponentBase` has a built-in optimisation:
+if a component's parameters are all primitive, immutable types (`string`, `int`, `bool`, `Guid`, `DateTime`, etc -
+[see all](https://github.com/dotnet/aspnetcore/blob/main/src/Components/Components/src/ChangeDetection.cs#L48)) and
 none of their values changed, Blazor skips the re-render for you. That's why simple components often feel "free":
 the framework is quietly detecting that nothing changed.
 
-That optimisation only covers primitives though. As soon as a component takes a complex parameter, for example an 
-object, a `List<int>`, a `string[]`, a record, or `Action` / `Func<T>`, Blazor can no longer prove it's unchanged, so it plays 
-it safe and re-renders every time the parent does. This often catches people out because a component that rendered 
-efficiently for weeks suddenly starts re-rendering on every parent update, and the only thing that changed was adding 
-a non-primitive parameter. Nothing looks obviously wrong, and there's no warning, the change detection just stopped 
+That optimisation only covers a limited set of known immutable types, though. As soon as a component takes a complex parameter, for example an
+object, a `List<int>`, a `string[]`, a record, or `Action` / `Func<T>`, Blazor can no longer prove it's unchanged, so it plays
+it safe and re-renders every time the parent does. This often catches people out because a component that rendered
+efficiently for weeks suddenly starts re-rendering on every parent update, and the only thing that changed was adding
+a non-primitive parameter. Nothing looks obviously wrong, and there's no warning, the change detection just stopped
 applying.
 
-When a subtree does heavy work or makes network calls and database queries in response to parameter changes, or on 
+When a subtree does heavy work or makes network calls and database queries in response to parameter changes, or on
 render, those redundant renders can really add up, slowing things down for users and increasing system load.
 
 ## Why `<Memo>`?
 
-BlazorMemoire's `<Memo>` lets you wrap any subtree and provide a set of dependency keys. The subtree renders once, then stays frozen 
-until one or more keys change. No new parameters flow in, no lifecycle methods fire, and nothing downstream re-renders 
-unless you've declared that it should.
+BlazorMemoire's `<Memo>` lets you wrap any subtree and provide a set of dependency keys. The subtree renders once, then
+parent-driven updates are suppressed until one or more keys change. While those updates are suppressed, wrapped child
+components receive no new parameters from the parent and their parameter lifecycle methods do not run.
 
 - **Skip expensive work:** Freeze subtrees that would otherwise re-run costly logic, queries, or network requests on every parent render.
 - **Control from the call site:** Decide when a subtree updates where you use it, not inside the component.
 - **Works with any component:** Wrap third-party or shared components you can't (or don't want to) modify.
 - **One declaration, whole subtree:** Freeze a component and all its descendants together, without touching their source.
-- **Minimal performance overhead, often a substantial gain:** `<Memo>` is fast, and consumes negligible amounts of memory in nearly all cases. The performance cost of comparing the dependency keys is low, which means `<Memo>` only needs to skips a little rendering work to be a net positive. When used where it will skip a lot of rendering work - the savings can outweigh the cost many times over. 
+- **Minimal performance overhead, often a substantial gain:** Comparing small dependency keys is cheap, so `<Memo>` only needs to skip a little rendering work to be a net positive.
 
 ## Why not `ShouldRender`?
 
@@ -51,170 +89,147 @@ Blazor's built-in `ShouldRender` override lets a component decide internally whe
 
 `ShouldRender` is still the simpler choice when a component only needs to skip renders based on its own state, and you control its source.
 
-`<Memo>` earns its place when you need to control rendering at the point of use instead of in the component, cut out 
+`<Memo>` is useful when you need to control rendering at the point of use instead of in the component, cut out
 rendering work for a whole subtree, or can't easily modify the component.
 
-## Installation
+## Choosing a comparison mode
 
-```shell
-dotnet add package BlazorMemoire
-```
+| You want to compare by...                                  | Use                                                      |
+|------------------------------------------------------------|----------------------------------------------------------|
+| Primitive, string, enum, record, or custom object equality | Default (`Deep="false"`)                                 |
+| Identity of a stable collection instance                   | Default (`Deep="false"`)                                 |
+| Contents of newly created or immutable collections         | `Deep="true"`                                            |
+| An in-place mutation                                       | A separate scalar/version key                            |
+| Results of a lazy `IEnumerable`                            | `Deep="true"`, noting the performance implications below |
 
-## Usage
+### Default comparison mode (`Deep="false"`)
 
-Wrap any subtree in a `<Memo>` component and provide dependency keys. The child content only re-renders when a key value changes.
-
-```razor
-@using BlazorMemoire.Components
-
-<Memo Keys="@([user.Id, selectedTab])" Deep="@false">
-    <ExpensiveChildComponent User="@user" Tab="@selectedTab" />
-</Memo>
-```
-
-### `Keys` behaviour and comparison options
-
-| `Keys` value   | Behaviour                                                                                                                                                                                                         |
-|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `null`         | No memoisation. Renders on every parent render.                                                                                                                                                                   |
-| `[]`           | Render once, freeze forever.                                                                                                                                                                                      |
-| `[a, b, c]`    | Re-render only when `a`, `b`, or `c` changes.                                                                                                                                                                     |
-| `Deep="false"` | **Default.** Each existing key element is compared with the incoming key element via its own `object.Equals` (reference equality for most collections).                                                           |
-| `Deep="true"`  | Opt-in to deep structural comparison of collection keys (including nested collections), with `object.Equals` comparison of non-collections. Mutations to collections are **NOT** tracked for performance reasons. |
-
-### Comparison modes
-
-#### Shallow comparison (default with `Deep="false"`)
-
-By default (with `Deep="false"`), each incoming key element is compared against the corresponding element from the previous 
-render's snapshot, position by position.
-
-The comparison is a null-safe call to the existing element's `object.Equals` method (i.e. `existing.Equals(incoming)`).
-two nulls are equal and otherwise the stored element's own equality decides. This is allocation-free and involves no reflection.
-
-- **Primitives, strings, records, enums, `DateTime`, `TimeOnly`, etc.:** compared by value, because
-  those types override `Equals` to compare by value.
-- **Reference-type collections (`List<T>`, `Dictionary<K,V>`, arrays, `HashSet<T>`, etc.):**
-  compared **by reference**. Two distinct instances with identical contents are treated
-  as *changed*.
-- **Types with a custom `Equals` implementation** are compared via that `Equals` implementation
+The default comparison mode (with `Deep="false"`) performs a null-safe `existing.Equals(incoming)` call for each key,
+in order. It does not enumerate collection keys; each key's own `Equals` implementation determines equality.
 
 ```razor
-@* Default mode: a fresh List each render is a new reference, so the child DOES re-render. *@
+@* A new List instance means ChildComponent re-renders on each parent render. *@
 <Memo Keys="@([new List<int> { 1, 2, 3 }])">
     <ChildComponent />
 </Memo>
-
-@* To freeze on content in default/shallow mode, reuse the same instance across renders: *@
-<Memo Keys="@([_stableList])">
-    <ChildComponent />
-</Memo>
 ```
 
-> [!NOTE]
-> Wrapping a collection in a `record` does **not** give you content comparison.
-> A record's generated `Equals` compares each field with `EqualityComparer<T>.Default`, and
-> for a `List<T>` field that is reference equality, so two records holding distinct lists with the same contents are 
-> still unequal. `Deep="true"` traverses recognized collection keys, but it does not inspect properties of records or
-> other arbitrary objects. Pass the collection as a separate key, or implement structural equality on the record, when
-> its contents should control rendering.
+### Deep comparison mode (`Deep="true"`)
 
-### Deep structural equality of collection keys (opt-in with `Deep="true"`)
-
-Set `Deep="true"` to compare key elements by deep value equality instead:
-
-- **Collections** (arrays, lists, dictionaries, sets) are compared element-wise.
-- **Dictionaries** are compared by key/value pairs; optimized concrete dictionary shapes must
-  share the same comparer instance, while **sets** are compared unordered.
-- **Nested collections** compared recursively (up to a depth limit of 32, which falls back to always rendering if exceeded).
-- **Lazy enumerables** (LINQ queries, `yield return` generators) are materialised when the
-  snapshot is created, so the comparison captures their current values.
-- **Primitives, strings, records, enums, and other value types** continue to be compared via `object.Equals`, the same as with `Deep="false"`.
-- **Types with a custom `Equals` implementation** also work unchanged versus `Deep="false"`.
+Set `Deep="true"` when collections in `Keys` with equal contents across renders should be considered equal:
 
 ```razor
-@* Deep mode: equal-content lists compare equal, so the child does NOT re-render. *@
+@* The List<int> instance in Keys is different, but its contents are the same across each render *@
+@* so ChildComponent renders for the first time and doesn't re-render afterwards *@
+
 <Memo Keys="@([new List<int> { 1, 2, 3 }])" Deep="@true">
     <ChildComponent />
 </Memo>
 ```
 
 > [!IMPORTANT]
-> When a collection changes, pass a new instance.
->
-> `Deep="true"` compares the contents of two collection instances, but it does not detect changes
-> made by modifying the same `List`, `Dictionary`, array, or set in place. `<Memo>` does not track mutations to keep
-> repeat comparisons allocation-free for supported collection shapes, as detecting in-place mutations would require 
-> retaining a copy of the collection's previous contents.
->
-> Instead, replace the collection when it changes:
->
-> ```csharp
-> var updatedItems = new List<Item>(_items);
-> updatedItems.Add(newItem);
-> _items = updatedItems;
-> ```
->
-> or use immutable collection types:
->
-> ```csharp
-> private ImmutableList<Item> _items = [];
->
-> private void AddItem(Item item)
-> {
->   _items = _items.Add(item);
-> }
-> <Memo Keys="@([_items])" Deep="@true">
-> <ItemList Items="@_items" />
-> </Memo>
-> ```
->
-> If the collection must be mutated in place, include a version key and increment it after each change:
->
-> ```razor
-> <Memo Keys="@([_items, _itemsVersion])" Deep="@true">
->     <ItemList Items="@_items" />
-> </Memo>
-> ```
->
-> ```csharp
-> _items.Add(newItem);
-> _itemsVersion++;
-> ```
+> The value of `Deep` is expected to remain constant for a given `<Memo>` instance. Changing it is treated as a key change
+> and forces a render.
 
-The value of `Deep` itself is expected to be constant for a given `<Memo>` instance; changing it between renders
-is treated as a key change and forces a re-render.
+## Common gotchas
+
+### Keys entirely define when parent updates propagate
+
+This is `<Memo>`'s purpose, but a missing key can easily lead to stale UI. When its parent renders, `<Memo>` *only*
+updates its wrapped content if a key has changed. Values used inside the wrapper should therefore have a corresponding
+key if changes to them need to reach the child.
+
+```razor
+@* Don't do this: selectedTab is passed to the child but omitted from Keys. *@
+<Memo Keys="@([user.Id])">
+    <ExpensiveChildComponent UserId="@user.Id" Tab="@selectedTab" />
+</Memo>
+```
+
+Here, changing `selectedTab` alone does not update `ExpensiveChildComponent`. Its `Tab`
+parameter remains unchanged until `user.Id` changes and causes the subtree to update.
+
+### Children can still update independently
+
+`<Memo>` only suppresses updates caused by its parent rendering. A child can still re-render
+in response to its own state, events, or independently delivered updates such as cascading
+values.
+
+### Deep mode does not detect in-place collection mutation
+
+`Deep="true"` compares the contents of collection instances in the previous and current
+`Keys` during `SetParametersAsync`. Concrete collections such as `List<T>` are retained by
+reference rather than copied, avoiding the memory and GC cost of snapshotting their contents.
+Mutating the same list, array, dictionary, or set in place can therefore leave the previous
+snapshot pointing at the already-mutated object, and no change will be detected.
+
+Replace collections that are passed into `Keys` when they change:
+
+```csharp
+var updatedItems = new List<Item>(_items);
+updatedItems.Add(newItem);
+_items = updatedItems;
+```
+
+Or use an immutable collection, where each change returns a new instance:
+
+```csharp
+private ImmutableList<Item> _items = [];
+
+private void AddItem(Item item)
+{
+    _items = _items.Add(item);
+}
+```
+
+For nested collections, replace each collection along the changed path. If in-place mutation is
+unavoidable, add a scalar version key and increment it after every mutation:
+
+```razor
+<Memo Keys="@([_items, _itemsVersion])" Deep="@true">
+    <ItemList Items="@_items" />
+</Memo>
+```
+
+### Memoisation only helps stable subtrees
+
+If the keys change on every parent render, `<Memo>` performs the comparison and then renders
+the child anyway. Use it where the subtree is usually stable and expensive enough to justify
+the boundary; do not wrap every component by default.
+
+## Default mode detailed behaviour
+
+- Primitives, strings, enums, and records use their existing value semantics.
+- Types with custom `Equals` overrides are compared using that.
+- Most reference-type collections, including arrays, lists, dictionaries, and sets, compare
+  by identity. Distinct instances with equal contents are treated as changed.
+- A record containing a collection does not automatically gain structural collection
+  equality. Generated record equality uses normal equality semantics for each of its properties.
+
+## Deep mode detailed behaviour
+
+- Ordered collections and other enumerables compare each element in order.
+- Nested collections are compared recursively, up to a max depth of 32.
+- Collections exceeding the max depth are treated as changed.
+- Sets implementing `ISet<T>`, such as `HashSet<T>` and `SortedSet<T>`, compare without
+  regard to order.
+- Standard dictionaries implementing non-generic `IDictionary`, such as `Dictionary<TKey, TValue>`,
+  compare by key/value pairs without regard to enumeration order.
+- Custom dictionary types that implement only `IDictionary<TKey, TValue>` or `IReadOnlyDictionary<TKey, TValue>`
+  (for example, a generic-only dictionary wrapper or custom read-only lookup) fall back to ordered enumerable
+  comparison, so their enumeration order affects equality.
+- Non-collection values, including records, are compared with `object.Equals`; properties of
+  arbitrary objects (like a plain class) are not traversed unless a custom `Equals` override is present to do this.
+- Top-level lazy enumerable keys, such as LINQ queries and `yield return` generators, are
+  materialised for the stored snapshot. They are enumerated during later comparisons and may
+  be enumerated again when a changed snapshot is stored, so avoid expensive or side-effecting
+  queries.
 
 > [!NOTE]
-> Dictionary keys are matched with the dictionary's comparer. For the typed fast-path shapes listed in the Performance & 
-> Benchmarks section, a change in the Dictionary comparer is treated as a key change, even when the current entries are 
-> identical. This is unlikely to happen in practice, but `<Memo>` errs on the side of caution and prefers an additional 
-> render to potentially missing an intentional state change. 
-
-### Choosing a mode
-
-| You want to compare keys by…                                  | Use                                        |
-|---------------------------------------------------------------|--------------------------------------------|
-| Reference identity of a collection you already keep stable    | Default (`Deep="false"`) + reuse instances |
-| Value of primitives, strings, records, enums                  | Default (`Deep="false"`)                   |
-| Content of collections replaced when their contents change    | `Deep="true"`                              |
-| Changes to a collection mutated in place                      | Include a scalar version key               |
-| Content of lazy `IEnumerable` snapshots                       | `Deep="true"`                              |
-
-### Modes
-
-- **Default mode** is the most performant option with a single O(n) pass over the keys, calling each
-  element's `object.Equals` method. No reflection, no boxing beyond what the `object?` keys already carry,
-  and the snapshot reuses its backing buffer across renders (references copied, nothing
-  enumerated or materialised). Prefer this mode with stable references or primitive keys on
-  hot render paths.
-- **Deep mode** trades work for convenience, but is still highly performant. It walks collections 
-  element-wise, matches dictionaries by key, and sets in an order-insensitive way, and recurses into nested 
-  enumerables/collections with a max depth of 32. Lazy enumerables are **fully enumerated and allocated** into arrays 
-  on snapshot so their values are stable (this is the main extra cost) so avoid `Deep="true"` with `IEnumerable` keys 
-  for very large or expensive-to-enumerate objects unless a simpler memo key for it cannot be derived. Arrays and lists
-  of supported scalar and nullable scalar types still take an internal `Span` fast-path, while supported `HashSet<T>`
-  values use typed set comparison.
+> Dictionary keys are matched with the dictionary's comparer. For the typed fast-path shapes listed in the Performance &
+> Benchmarks section, a change in the Dictionary comparer is treated as a key change, even when the current entries are
+> identical. This is unlikely to happen in practice, but `<Memo>` errs on the side of caution and prefers an additional
+> render to potentially missing an intentional state change.
 
 ## Performance & Benchmarks
 
@@ -235,64 +250,50 @@ the child does a varying amount of work:
 
 The wrapper adds *negligible* time overhead per-render (nanoseconds, within measurement noise), and allocates 0 bytes
 for shallow keys and common deep-comparison collection shapes. Typed fast paths cover arrays, lists, and sets containing
-common CLR types:
+common CLR types and their nullable counterpart when applicable:
 
-| CLR type         | Nullable counterpart supported |
-|------------------|--------------------------------|
-| `string`         | N/A                            |
-| `int`            | Yes                            |
-| `long`           | Yes                            |
-| `double`         | Yes                            |
-| `float`          | Yes                            |
-| `decimal`        | Yes                            |
-| `bool`           | Yes                            |
-| `byte`           | Yes                            |
-| `Guid`           | Yes                            |
-| `DateTime`       | Yes                            |
-| `DateTimeOffset` | Yes                            |
-| `DateOnly`       | Yes                            |
-| `TimeOnly`       | Yes                            |
-| `TimeSpan`       | Yes                            |
+| CLR type         |
+|------------------|
+| `string`         |
+| `int`            |
+| `long`           |
+| `double`         |
+| `float`          |
+| `decimal`        |
+| `bool`           |
+| `byte`           |
+| `Guid`           |
+| `DateTime`       |
+| `DateTimeOffset` |
+| `DateOnly`       |
+| `TimeOnly`       |
+| `TimeSpan`       |
 
-String-keyed dictionaries with any of these value types or their nullable counterpart are also covered. 
-Additional fast paths cover `Dictionary<string, object?>` (the usual shape for captured unmatched Blazor attributes), 
+String-keyed dictionaries with any of these value types or their nullable counterpart are also covered.
+Additional fast paths cover `Dictionary<string, object?>` (the usual shape for captured unmatched Blazor attributes),
 `Dictionary<int, string>`, and `Dictionary<int, int>`. Other less common dictionary and collection shapes
 use general fallbacks that can allocate due to boxing.
 
-A trivial child has almost no work to skip, so the net performance gain is roughly zero; the benefit grows quickly 
-as the wrapped subtree gets more expensive, however.
-
-Shallow and deep mode perform almost identically with stable keys, because a frozen child skips its render work in 
+Shallow and deep mode perform almost identically with stable keys, because a frozen child skips its render work in
 either mode; the only difference between them is key-comparison cost, which is negligible for simple keys.
 
-**When keys change every render, `<Memo>` can't help**. It pays for the key comparison and
-then re-renders anyway, costing roughly 2× the un-memoised baseline, so reserve `<Memo>` for
-subtrees that are actually stable most of the time.
+**The overhead of `Deep="true"` versus `Deep="false"` is paid on every render** as `<Memo>` must compare the keys to
+decide whether to freeze the child, even when they're unchanged. That cost is negligible for common key shapes when
+rendering work is skipped, but it's pure overhead when keys change and rendering work happens anyway.
+The default per-key `object.Equals` comparison is effectively free either way.
 
-**The overhead of `Deep="true"` versus `Deep="false"` is paid on every render** as `<Memo>` must compare the keys to 
-decide whether to freeze the child, even when they're unchanged. That cost is negligible when rendering work is skipped, 
-but it's pure overhead when keys change and rendering work happens anyway. The default per-key `object.Equals` 
-comparison is effectively free either way.
+The performance cost of deep comparison scales with the size and shape of the keys. For small keys and collections, as 
+is typical for parameters, the savings from eliminating render work can easily outweigh the comparison overhead. 
+Primitive arrays and lists use a `Span` fast path, while common dictionary shapes use typed paths that avoid boxing. 
+Supported primitive sets use a linear typed path; in the worst case, other sets use an order-independent matching pass 
+that can grow quadratically. Less common dictionary and collection shapes use more expensive general fallbacks.
 
-The performance cost of deep comparison scales with the size and shape of the keys: primitive arrays and lists stay in the
-nanoseconds via a `Span` fast-path, while records, sets, and dictionaries grow linearly. Common concrete dictionary shapes
-take typed fast paths that avoid boxing; other dictionary types use the more expensive general fallback. For a small set of
-keys and dictionaries with a small number of items, as is typically the case for parameters, the savings from eliminating
-render work easily outweigh the comparison overhead.
-
-In short: prefer the default of `Deep="false"`, and keep keys small when using `Deep="true"`. 
+In short: prefer the default of `Deep="false"`, and keep keys small when using `Deep="true"`.
 Use `<Memo>` in a targeted fashion where it is of most benefit instead of applying it by default.
-
-## Requirements
-
-- .NET 8.0, .NET 9.0, or .NET 10.0
-- ASP.NET Core (Blazor Server, WebAssembly, or Auto)
 
 ## License
 
-[MIT](LICENSE)
-
-MIT License
+[MIT License](LICENSE)
 
 Copyright (c) 2026 Matthew Hetherington
 
