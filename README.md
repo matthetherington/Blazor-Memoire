@@ -8,7 +8,7 @@
 
 A highly-performant Blazor `<Memo>` component, similar to [`React.memo`](https://react.dev/reference/react/memo),
 that stops parent renders propagating through its child subtree until explicit dependency keys change, preventing
-unnecessary parent-driven re-renders and making lifecycle methods fire only when there's been a true change.
+unnecessary re-renders and making lifecycle methods fire only when there's been a true change.
 
 ## Quick start
 
