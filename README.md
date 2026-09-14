@@ -282,11 +282,11 @@ decide whether to freeze the child, even when they're unchanged. That cost is ne
 rendering work is skipped, but it's pure overhead when keys change and rendering work happens anyway.
 The default per-key `object.Equals` comparison is effectively free either way.
 
-The performance cost of deep comparison scales with the size and shape of the keys. Primitive arrays and lists use a
-`Span` fast path, while common dictionary shapes use typed paths that avoid boxing. Supported primitive sets use a
-linear typed path; other sets use an order-independent matching pass that can grow quadratically. Less common
-dictionary and collection shapes use more expensive general fallbacks. For small keys and collections, as is typical
-for parameters, the savings from eliminating render work can easily outweigh the comparison overhead.
+The performance cost of deep comparison scales with the size and shape of the keys. For small keys and collections, as 
+is typical for parameters, the savings from eliminating render work can easily outweigh the comparison overhead. 
+Primitive arrays and lists use a `Span` fast path, while common dictionary shapes use typed paths that avoid boxing. 
+Supported primitive sets use a linear typed path; in the worst case, other sets use an order-independent matching pass 
+that can grow quadratically. Less common dictionary and collection shapes use more expensive general fallbacks.
 
 In short: prefer the default of `Deep="false"`, and keep keys small when using `Deep="true"`.
 Use `<Memo>` in a targeted fashion where it is of most benefit instead of applying it by default.
