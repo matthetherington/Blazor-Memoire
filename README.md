@@ -74,13 +74,13 @@ Wrap any subtree in a `<Memo>` component and provide dependency keys. The child 
 
 ### `Keys` behaviour and comparison options
 
-| `Keys` value   | Behaviour                                                                                                                                               |
-|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `null`         | No memoisation. Renders on every parent render.                                                                                                         |
-| `[]`           | Render once, freeze forever.                                                                                                                            |
-| `[a, b, c]`    | Re-render only when `a`, `b`, or `c` changes.                                                                                                                 |
-| `Deep="false"` | **Default.** Each existing key element is compared with the incoming key element via its own `object.Equals` (reference equality for most collections). |
-| `Deep="true"`  | Opt-in to deep structural comparison of key elements (collections, nesting).                                                                            |
+| `Keys` value   | Behaviour                                                                                                                                                                                                         |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `null`         | No memoisation. Renders on every parent render.                                                                                                                                                                   |
+| `[]`           | Render once, freeze forever.                                                                                                                                                                                      |
+| `[a, b, c]`    | Re-render only when `a`, `b`, or `c` changes.                                                                                                                                                                     |
+| `Deep="false"` | **Default.** Each existing key element is compared with the incoming key element via its own `object.Equals` (reference equality for most collections).                                                           |
+| `Deep="true"`  | Opt-in to deep structural comparison of collection keys (including nested collections), with `object.Equals` comparison of non-collections. Mutations to collections are **NOT** tracked for performance reasons. |
 
 ### Comparison modes
 
@@ -97,6 +97,7 @@ two nulls are equal and otherwise the stored element's own equality decides. Thi
 - **Reference-type collections (`List<T>`, `Dictionary<K,V>`, arrays, `HashSet<T>`, etc.):**
   compared **by reference**. Two distinct instances with identical contents are treated
   as *changed*.
+- **Types with a custom `Equals` implementation** are compared via that `Equals` implementation
 
 ```razor
 @* Default mode: a fresh List each render is a new reference, so the child DOES re-render. *@
@@ -118,16 +119,18 @@ two nulls are equal and otherwise the stored element's own equality decides. Thi
 > other arbitrary objects. Pass the collection as a separate key, or implement structural equality on the record, when
 > its contents should control rendering.
 
-### Deep structural equality (opt-in with `Deep="true"`)
+### Deep structural equality of collection keys (opt-in with `Deep="true"`)
 
 Set `Deep="true"` to compare key elements by deep value equality instead:
 
-- **Collections** (arrays, lists, dictionaries, sets) are compared element-wise
+- **Collections** (arrays, lists, dictionaries, sets) are compared element-wise.
 - **Dictionaries** are compared by key/value pairs; optimized concrete dictionary shapes must
-  share the same comparer instance, while **sets** are compared unordered
-- **Nested collections** compared recursively (up to a depth limit of 32, which falls back to always rendering if exceeded)
+  share the same comparer instance, while **sets** are compared unordered.
+- **Nested collections** compared recursively (up to a depth limit of 32, which falls back to always rendering if exceeded).
 - **Lazy enumerables** (LINQ queries, `yield return` generators) are materialised when the
-  snapshot is created, so the comparison captures their current values
+  snapshot is created, so the comparison captures their current values.
+- **Primitives, strings, records, enums, and other value types** continue to be compared via `object.Equals`, the same as with `Deep="false"`.
+- **Types with a custom `Equals` implementation** also work unchanged versus `Deep="false"`.
 
 ```razor
 @* Deep mode: equal-content lists compare equal, so the child does NOT re-render. *@
@@ -140,9 +143,9 @@ Set `Deep="true"` to compare key elements by deep value equality instead:
 > When a collection changes, pass a new instance.
 >
 > `Deep="true"` compares the contents of two collection instances, but it does not detect changes
-> made by modifying the same `List`, `Dictionary`, array, or set in place. Avoiding mutation tracking keeps repeat 
-> comparisons allocation-free for supported collection shapes, as detecting in-place mutations would require `<Memo>` to 
-> retain a copy of the collection's previous contents.
+> made by modifying the same `List`, `Dictionary`, array, or set in place. `<Memo>` does not track mutations to keep
+> repeat comparisons allocation-free for supported collection shapes, as detecting in-place mutations would require 
+> retaining a copy of the collection's previous contents.
 >
 > Instead, replace the collection when it changes:
 >
@@ -150,6 +153,20 @@ Set `Deep="true"` to compare key elements by deep value equality instead:
 > var updatedItems = new List<Item>(_items);
 > updatedItems.Add(newItem);
 > _items = updatedItems;
+> ```
+>
+> or use immutable collection types:
+>
+> ```csharp
+> private ImmutableList<Item> _items = [];
+>
+> private void AddItem(Item item)
+> {
+>   _items = _items.Add(item);
+> }
+> <Memo Keys="@([_items])" Deep="@true">
+> <ItemList Items="@_items" />
+> </Memo>
 > ```
 >
 > If the collection must be mutated in place, include a version key and increment it after each change:
@@ -181,7 +198,7 @@ is treated as a key change and forces a re-render.
 | Reference identity of a collection you already keep stable    | Default (`Deep="false"`) + reuse instances |
 | Value of primitives, strings, records, enums                  | Default (`Deep="false"`)                   |
 | Content of collections replaced when their contents change    | `Deep="true"`                              |
-| Changes to a collection mutated in place                      | Include a scalar version key                |
+| Changes to a collection mutated in place                      | Include a scalar version key               |
 | Content of lazy `IEnumerable` snapshots                       | `Deep="true"`                              |
 
 ### Modes
@@ -268,9 +285,31 @@ Use `<Memo>` in a targeted fashion where it is of most benefit instead of applyi
 
 ## Requirements
 
-- .NET 9.0 or .NET 10.0
+- .NET 8.0, .NET 9.0, or .NET 10.0
 - ASP.NET Core (Blazor Server, WebAssembly, or Auto)
 
 ## License
 
 [MIT](LICENSE)
+
+MIT License
+
+Copyright (c) 2026 Matthew Hetherington
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
