@@ -135,8 +135,8 @@ Set `Deep="true"` when collections in `Keys` with equal contents across renders 
 
 ### Keys entirely define when parent updates propagate
 
-This is `<Memo>`'s purpose, but a missing key can easily lead to stale UI. When its parent renders, `<Memo>` *only* 
-updates its wrapped content if a key has changed. Values used inside the wrapper should therefore have a corresponding 
+This is `<Memo>`'s purpose, but a missing key can easily lead to stale UI. When its parent renders, `<Memo>` *only*
+updates its wrapped content if a key has changed. Values used inside the wrapper should therefore have a corresponding
 key if changes to them need to reach the child.
 
 ```razor
@@ -278,8 +278,8 @@ Shallow and deep mode perform almost identically with stable keys, because a fro
 either mode; the only difference between them is key-comparison cost, which is negligible for simple keys.
 
 **The overhead of `Deep="true"` versus `Deep="false"` is paid on every render** as `<Memo>` must compare the keys to
-decide whether to freeze the child, even when they're unchanged. That cost is negligible for common key shapes when 
-rendering work is skipped, but it's pure overhead when keys change and rendering work happens anyway. 
+decide whether to freeze the child, even when they're unchanged. That cost is negligible for common key shapes when
+rendering work is skipped, but it's pure overhead when keys change and rendering work happens anyway.
 The default per-key `object.Equals` comparison is effectively free either way.
 
 The performance cost of deep comparison scales with the size and shape of the keys. Primitive arrays and lists use a
