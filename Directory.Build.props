@@ -8,6 +8,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryBranch>main</RepositoryBranch>
     <Version>2.0.4</Version>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 
     <!-- make editorconfig / code style rules non-optional -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

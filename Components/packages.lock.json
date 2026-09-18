@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "CSharpier.MsBuild": {
+        "type": "Direct",
+        "requested": "[1.3.0, )",
+        "resolved": "1.3.0",
+        "contentHash": "jzzLpmz7F6LyBh5FTZy8/4dEYVcAG9VjBPKryZ82LIoUuupcBkCSXzaeS/4oYcp/rBC8yVLcDstJ8CIv9n2IFw=="
+      },
+      "Meziantou.Analyzer": {
+        "type": "Direct",
+        "requested": "[3.0.200, )",
+        "resolved": "3.0.200",
+        "contentHash": "xDYQDG/pBdvC3r1PcqQw9d8/9dRYxh9xxljjgVydBezpxOUSABjuRjVWNoUmqNByrtWqwJ+nRdAwUuWPbU8uXQ=="
+      }
+    },
+    "net8.0": {
+      "CSharpier.MsBuild": {
+        "type": "Direct",
+        "requested": "[1.3.0, )",
+        "resolved": "1.3.0",
+        "contentHash": "jzzLpmz7F6LyBh5FTZy8/4dEYVcAG9VjBPKryZ82LIoUuupcBkCSXzaeS/4oYcp/rBC8yVLcDstJ8CIv9n2IFw=="
+      },
+      "Meziantou.Analyzer": {
+        "type": "Direct",
+        "requested": "[3.0.200, )",
+        "resolved": "3.0.200",
+        "contentHash": "xDYQDG/pBdvC3r1PcqQw9d8/9dRYxh9xxljjgVydBezpxOUSABjuRjVWNoUmqNByrtWqwJ+nRdAwUuWPbU8uXQ=="
+      }
+    },
+    "net9.0": {
+      "CSharpier.MsBuild": {
+        "type": "Direct",
+        "requested": "[1.3.0, )",
+        "resolved": "1.3.0",
+        "contentHash": "jzzLpmz7F6LyBh5FTZy8/4dEYVcAG9VjBPKryZ82LIoUuupcBkCSXzaeS/4oYcp/rBC8yVLcDstJ8CIv9n2IFw=="
+      },
+      "Meziantou.Analyzer": {
+        "type": "Direct",
+        "requested": "[3.0.200, )",
+        "resolved": "3.0.200",
+        "contentHash": "xDYQDG/pBdvC3r1PcqQw9d8/9dRYxh9xxljjgVydBezpxOUSABjuRjVWNoUmqNByrtWqwJ+nRdAwUuWPbU8uXQ=="
+      }
+    }
+  }
+}
