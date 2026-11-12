@@ -7,7 +7,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryBranch>main</RepositoryBranch>
-    <Version>2.0.4</Version>
+    <Version>2.0.5</Version>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 
     <!-- Workaround for dotnet build-server issue, see https://github.com/dotnet/razor/issues/13184 -->

@@ -2,6 +2,12 @@
 
 All notable changes to Blazor Memoire are documented here.
 
+## [2.0.5] - 2026-11-12
+
+### Added
+
+- Added .NET 11.0 to the library and test target frameworks and the publishing workflow.
+
 ## [2.0.4] - 2026-09-14
 
 ### Changed
@@ -68,6 +74,7 @@ All notable changes to Blazor Memoire are documented here.
 - Added value-based comparison support for primitive values and common collections.
 - Added the README, MIT license, and GitHub Actions workflow for publishing to NuGet.
 
+[2.0.5]: https://github.com/matthetherington/Blazor-Memoire/releases/tag/v2.0.5
 [2.0.4]: https://github.com/matthetherington/Blazor-Memoire/releases/tag/v2.0.4
 [2.0.3]: https://github.com/matthetherington/Blazor-Memoire/releases/tag/v2.0.3
 [2.0.2]: https://github.com/matthetherington/Blazor-Memoire/releases/tag/v2.0.2

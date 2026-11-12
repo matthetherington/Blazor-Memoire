@@ -12,7 +12,7 @@ unnecessary re-renders and making lifecycle methods fire only when there's been 
 
 ## Quick start
 
-BlazorMemoire supports .NET 8, .NET 9, and .NET 10 across Blazor Server, WebAssembly,
+BlazorMemoire supports .NET 8, .NET 9, .NET 10, and .NET 11 across Blazor Server, WebAssembly,
 and Auto render modes.
 
 ```shell
